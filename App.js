@@ -1,5 +1,5 @@
 //? Dependencies
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import ICON from 'react-native-vector-icons/MaterialIcons';
 
 //? Colors theme
@@ -18,6 +18,11 @@ export default function App() {
 				<View style={styles.inputContainer}>
 					<TextInput placeholder="Add new todo..."></TextInput>
 				</View>
+				<TouchableOpacity>
+					<View style={styles.iconContainer}>
+						<ICON name="add" color={COLORS.white} size={30} />
+					</View>
+				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
 	);
@@ -25,6 +30,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
 	header: {
+		margin: 10,
 		padding: 20, //? Internal spacing to children to avoid hitting edges of device
 		flexDirection: 'row', //? How the items should be align (Row = horizontal)
 		alignItems: 'center', //? Align items vertically on the axis
@@ -49,9 +55,20 @@ const styles = StyleSheet.create({
 		elevation: 40, //? Gives the impression of depth to this input text box
 		flex: 1,
 		height: 50, //? Determines how much height this will have
-		marginVertical: 20, //? Margin on vertical axis
-		marginRight: 20, //? Margin to the right, giving space to the "adding" todo button
+		marginVertical: 10, //? Margin on vertical axis
+		marginHorizontal: 10, //? Margin to the right, giving space to the "adding" todo button
 		borderRadius: 30, //? Rounds the edges of the input text box
-		paddingHorizontal: 20,
+		padding: 15,
+	},
+	iconContainer: {
+		backgroundColor: COLORS.primary, //? The input text box also has a white background
+		elevation: 40, //? Gives the impression of depth to this input text box
+		height: 50, //? Determines how much height this will have
+		width: 50,
+		marginVertical: 10, //? Margin on vertical axis
+		marginRight: 10, //? Margin to the right, giving space to the "adding" todo button
+		borderRadius: 25, //? Rounds the edges of the input text box
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
 });
