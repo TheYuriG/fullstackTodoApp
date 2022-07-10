@@ -14,7 +14,7 @@ export default function App() {
 		{ id: 3, taskDescription: 'Third TODO', completionStatus: false },
 	]);
 
-	//? This is the component that will be rendered for every index within
+	//? This is the component that will be rendered for every index within the allCachedTodos
 	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
 		<View
 			style={[
@@ -24,12 +24,13 @@ export default function App() {
 				},
 			]}
 		>
+			{/* //? Creates the checkbox and the respective TODO text around it */}
 			<View flex={1}>
 				<BouncyCheckbox
-					unfillColor="white"
-					fillColor="green"
-					isChecked={oneOfTheTodos?.completionStatus}
-					text={oneOfTheTodos?.taskDescription}
+					unfillColor="white" //? Inner color of the checkbox
+					fillColor="green" //? Outer color (radius) of the checkbox
+					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+					text={oneOfTheTodos?.taskDescription} //? Todo text
 					textStyle={{
 						fontSize: 15, //? Not that big
 						fontWeight: 'bold', //? Strong
@@ -56,7 +57,7 @@ export default function App() {
 			{/* //? Section for the TODO list */}
 			<FlatList
 				showVerticalScrollIndicator={false}
-				contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+				contentContainerStyle={{ padding: 10 }}
 				data={allCachedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
 			/>
@@ -78,35 +79,39 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+	//? The title of our app
 	header: {
-		margin: 10,
-		padding: 20, //? Internal spacing to children to avoid hitting edges of device
+		margin: 10, //? Outer spacing to separate our container from the other containers or device edges
+		padding: 20, //? Inner spacing between items and the edges of the container
 		flexDirection: 'row', //? How the items should be align (Row = horizontal)
 		alignItems: 'center', //? Align items vertically on the axis
 		justifyContent: 'space-between', //? Put space between the items, but not around them
 	},
+	//? Inner text of the title of our app
 	headerText: {
 		fontSize: 20, //? Big
 		fontWeight: 'bold', //? Strong
 		color: COLORS.primary, //? Eyes flaming gold
 	},
+	//? Styling for each individual box of our todo list
 	listItem: {
-		padding: 20,
+		padding: 20, //? Inner spacing between items and the edges of the container
 		flexDirection: 'row',
-		elevation: 12,
-		borderRadius: 7,
-		marginVertical: 10,
-		marginLeft: 5,
-		borderRadius: 10,
+		elevation: 12, //? Gives the impression of depth/distance from the background
+		marginVertical: 10, //? Outer vertical spacing to separate our container from the other containers or device edges
+		marginLeft: 5, //? Outer left spacing to separate our container from the other containers or device edges
+		borderRadius: 10, //? Rounds the edges of the list Item box
 	},
+	//? The red box that holds the deletion/trash icon
 	deleteBox: {
-		height: 25,
-		width: 25,
-		backgroundColor: 'red',
-		justifyContent: 'center',
-		alignItems: 'center',
-		borderRadius: 5,
+		height: 28, //? Determines how much height this will have
+		width: 25, //? Determines how much width this will have
+		backgroundColor: 'red', //? Defines the icon delete box to have a red background
+		justifyContent: 'center', //? Vertically aligns the icon within the box
+		alignItems: 'center', //? Horizontally aligns the icon within the box
+		borderRadius: 5, //? Rounds the edges of the icon box
 	},
+	//? Footer of the page that will contain the new TODO input box its respective icon
 	footer: {
 		position: 'absolute', //? Sets the position of this view
 		bottom: 0, //? Straight at the bottom
@@ -116,26 +121,27 @@ const styles = StyleSheet.create({
 		alignItems: 'center', //? Align items vertically within the footer
 		paddingHorizontal: 2, //? Horizontally space out internal items by 2 to the edges
 	},
+	//? Inside the footer, this will be the text container that will have the new TODO
 	inputContainer: {
 		backgroundColor: COLORS.white, //? The input text box also has a white background
 		elevation: 40, //? Gives the impression of depth to this input text box
 		flex: 1, //? Asks this container to stretch as much as possible while still respecting the others
 		height: 50, //? Determines how much height this will have
-		marginVertical: 10, //? Margin on vertical axis
-		marginHorizontal: 10, //? Margin to the right, giving space to the "adding" todo button
+		margin: 10, //? Outer spacing to separate our container from the other containers or device edges
 		borderRadius: 30, //? Rounds the edges of the input text box
 		justifyContent: 'center', //? Vertically aligns the inner text within the box
-		padding: 15,
+		padding: 15, //? Inner spacing between items and the edges of the container
 	},
+	//? Inside the footer, this will be the PLUS icon that will add the text from "inputContainer" to the TODO list
 	iconContainer: {
 		backgroundColor: COLORS.primary, //? The input text box also has a white background
-		elevation: 40, //? Gives the impression of depth to this input text box
+		elevation: 40, //? Gives the impression of depth/distance from the background
 		height: 50, //? Determines how much height this will have
-		width: 50,
+		width: 50, //? Determines how much width this will have
 		marginVertical: 10, //? Margin on vertical axis
 		marginRight: 10, //? Margin to the right, giving space to the "adding" todo button
-		borderRadius: 25, //? Rounds the edges of the input text box
-		justifyContent: 'center',
-		alignItems: 'center',
+		borderRadius: 25, //? Rounds the edges of the icon box
+		justifyContent: 'center', //? Vertically aligns the icon within the box
+		alignItems: 'center', //? Horizontally aligns the icon within the box
 	},
 });
