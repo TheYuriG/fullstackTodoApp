@@ -37,6 +37,24 @@ export default function App() {
 		setTextInput('');
 	};
 
+	//? This function will delete one or all todos from the list, depending
+	//? if the removal button was clicked in the header or within one todo
+	const deleteTodo = (deletionTodoId) => {
+		//? Checks if the deletion button was clicked at the top to
+		//? delete all items. The "0000" string is a placeholder and
+		//? could be replaced by anything else
+		if (deletionTodoId === '0000') {
+			setTodos([]);
+			return;
+		}
+		//? Iterate through the array of Todos and return all items but the
+		//? one that has the ID matching the ID we are trying to delete
+		const filteredTodoArray = allCachedTodos.filter((singleTodo) => singleTodo.id !== deletionTodoId);
+
+		//? Update the UI with the remaining Todos
+		setTodos(filteredTodoArray);
+	};
+
 	//? Update the status of this TODO. True will become false and vice versa
 	const changeTodoStatus = (status, completingTodoId) => {
 		//? Iterate through the whole array of cached TODOs
@@ -53,51 +71,52 @@ export default function App() {
 	};
 
 	//? This is the component that will be rendered for every index within the allCachedTodos
-	const ListItem = ({ todo: { item: oneOfTheTodos } }) => {
-		// console.log(oneOfTheTodos);
-		return (
-			<View
-				style={[
-					styles.listItem,
-					{
-						backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
-					},
-				]}
-			>
-				{/* //? Creates the checkbox and the respective TODO text around it */}
-				<View flex={1}>
-					<BouncyCheckbox
-						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-						unfillColor="white" //? Inner color of the checkbox
-						fillColor="green" //? Outer color (radius) of the checkbox
-						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-						text={oneOfTheTodos?.taskDescription} //? Todo text
-						iconStyle={{
-							borderWidth: 3, //? Make the TODO checkbox thicker than default
-						}}
-						textStyle={{
-							fontSize: 15, //? Not that big
-							fontWeight: 'bold', //? Strong
-							color: COLORS.primary, //? Contrasting purple
-							textDecorationLine: oneOfTheTodos?.completionStatus ? 'line-through' : 'none',
-							//? If the "todo" has "completionStatus" equal to "true",
-							//? line-through the text. Do nothing otherwise
-						}}
-					></BouncyCheckbox>
-				</View>
-				<TouchableOpacity style={[styles.deleteBox]}>
-					<ICON name="delete" size={20} color={COLORS.white}></ICON>
-				</TouchableOpacity>
+	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
+		<View
+			style={[
+				styles.listItem,
+				{
+					backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
+				},
+			]}
+		>
+			{/* //? Creates the checkbox and the respective TODO text around it */}
+			<View flex={1}>
+				<BouncyCheckbox
+					onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+					unfillColor="white" //? Inner color of the checkbox
+					fillColor="green" //? Outer color (radius) of the checkbox
+					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+					text={oneOfTheTodos?.taskDescription} //? Todo text
+					iconStyle={{
+						borderWidth: 3, //? Make the TODO checkbox thicker than default
+					}}
+					textStyle={{
+						fontSize: 15, //? Not that big
+						fontWeight: 'bold', //? Strong
+						color: COLORS.primary, //? Contrasting purple
+						textDecorationLine: oneOfTheTodos?.completionStatus ? 'line-through' : 'none',
+						//? If the "todo" has "completionStatus" equal to "true",
+						//? line-through the text. Do nothing otherwise
+					}}
+				></BouncyCheckbox>
 			</View>
-		);
-	};
+			<TouchableOpacity style={[styles.deleteBox]}>
+				<ICON name="delete" size={20} color={COLORS.white} onPress={() => deleteTodo(oneOfTheTodos?.id)}></ICON>
+			</TouchableOpacity>
+		</View>
+	);
 
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
 			{/* //? Section for the header, that has the bold title for our application */}
 			<View style={styles.header}>
 				<Text style={styles.headerText}>To-Do List</Text>
-				<ICON name="delete" size={25} color="red" />
+				{/* //? The UI will only render the DELETE ALL button on the header
+				//? if there is even anything to be deleted in the first place */}
+				{allCachedTodos.length > 0 && (
+					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
+				)}
 			</View>
 			{/* //? Section for the TODO list */}
 			<FlatList
