@@ -44,7 +44,10 @@ export default function App() {
 		//? delete all items. The "0000" string is a placeholder and
 		//? could be replaced by anything else
 		if (deletionTodoId === '0000') {
-			setTodos([]);
+			Alert.alert('Clear todos?', 'Warning: This action is not reversible!', [
+				{ text: 'Confirm', onPress: () => setTodos([]) },
+				{ text: 'Cancel' },
+			]);
 			return;
 		}
 		//? Iterate through the array of Todos and return all items but the
