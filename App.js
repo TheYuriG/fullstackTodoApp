@@ -1,6 +1,6 @@
 //? Dependencies
 import { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, Alert } from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 
@@ -8,6 +8,7 @@ import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: h
 const COLORS = { primary: '#800080', white: '#ffffff' };
 
 export default function App() {
+	const [textInput, setTextInput] = useState('');
 	const [allCachedTodos, setTodos] = useState([
 		{ id: 1, taskDescription: 'First TODO', completionStatus: true },
 		{ id: 2, taskDescription: 'Second TODO', completionStatus: false },
@@ -47,6 +48,30 @@ export default function App() {
 		</View>
 	);
 
+	//? This is the function that will get whatever text was inputted at
+	//? the bottom and add it to "allCachedTodos"
+	const addTodo = () => {
+		//? Check if the textInput is empty when the user clicks the button
+		//? to add a new Todo. This should never run because we don't display
+		//? the "Add" button if the textInput is empty
+		if (textInput == '') {
+			Alert.alert('Error', 'Your todo input is empty');
+			return;
+		}
+
+		//? If the textInput contains content, we create a new Todo with it
+		const newTodo = {
+			id: allCachedTodos.length + 1,
+			taskDescription: textInput,
+			completionStatus: false,
+		};
+
+		//? Then we append the new TODO to the end of the list
+		setTodos([...allCachedTodos, newTodo]);
+		//? And reset the input so the user doesn't have to
+		setTextInput('');
+	};
+
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
 			{/* //? Section for the header, that has the bold title for our application */}
@@ -65,14 +90,20 @@ export default function App() {
 			<View style={styles.footer}>
 				{/* //? Footer's input data section */}
 				<View style={styles.inputContainer}>
-					<TextInput placeholder="Add new todo..."></TextInput>
+					<TextInput
+						placeholder="Add new todo..."
+						value={textInput}
+						onChangeText={(text) => setTextInput(text)}
+					></TextInput>
 				</View>
-				{/* //? Footer's "Add" button */}
-				<TouchableOpacity>
-					<View style={styles.iconContainer}>
-						<ICON name="add" color={COLORS.white} size={30} />
-					</View>
-				</TouchableOpacity>
+				{/* //? Footer's "Add" button only renders if the textInput above isn't empty */}
+				{textInput != '' && (
+					<TouchableOpacity onPress={addTodo}>
+						<View style={styles.iconContainer}>
+							<ICON name="add" color={COLORS.white} size={30} />
+						</View>
+					</TouchableOpacity>
+				)}
 			</View>
 		</SafeAreaView>
 	);
