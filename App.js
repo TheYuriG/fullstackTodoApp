@@ -8,45 +8,10 @@ import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: h
 const COLORS = { primary: '#800080', white: '#ffffff' };
 
 export default function App() {
+	//? Tracks the text input at the footer
 	const [textInput, setTextInput] = useState('');
-	const [allCachedTodos, setTodos] = useState([
-		{ id: 1, taskDescription: 'First TODO', completionStatus: true },
-		{ id: 2, taskDescription: 'Second TODO', completionStatus: false },
-		{ id: 3, taskDescription: 'Third TODO', completionStatus: false },
-	]);
-
-	//? This is the component that will be rendered for every index within the allCachedTodos
-	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
-		<View
-			style={[
-				styles.listItem,
-				{
-					backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
-				},
-			]}
-		>
-			{/* //? Creates the checkbox and the respective TODO text around it */}
-			<View flex={1}>
-				<BouncyCheckbox
-					unfillColor="white" //? Inner color of the checkbox
-					fillColor="green" //? Outer color (radius) of the checkbox
-					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-					text={oneOfTheTodos?.taskDescription} //? Todo text
-					textStyle={{
-						fontSize: 15, //? Not that big
-						fontWeight: 'bold', //? Strong
-						color: COLORS.primary, //? Contrasting purple
-						textDecorationLine: oneOfTheTodos?.completionStatus ? 'line-through' : 'none',
-						//? If the "todo" has "completionStatus" equal to "true",
-						//? line-through the text. Do nothing otherwise
-					}}
-				></BouncyCheckbox>
-			</View>
-			<TouchableOpacity style={[styles.deleteBox]}>
-				<ICON name="delete" size={20} color={COLORS.white}></ICON>
-			</TouchableOpacity>
-		</View>
-	);
+	//? Tracks the TODO list in the app body
+	const [allCachedTodos, setTodos] = useState([]);
 
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
@@ -70,6 +35,61 @@ export default function App() {
 		setTodos([...allCachedTodos, newTodo]);
 		//? And reset the input so the user doesn't have to
 		setTextInput('');
+	};
+
+	//? Update the status of this TODO. True will become false and vice versa
+	const changeTodoStatus = (status, completingTodoId) => {
+		//? Iterate through the whole array of cached TODOs
+		const updatedTodos = allCachedTodos.map((oneTodoFromArray) => {
+			//? Find the TODO which the user clicked/tapped
+			if (oneTodoFromArray.id == completingTodoId) {
+				//? Change its completion state to what the tap tracked to change
+				oneTodoFromArray.completionStatus = status;
+			}
+			return oneTodoFromArray;
+		});
+		//? Update TODO list state
+		setTodos([...updatedTodos]);
+	};
+
+	//? This is the component that will be rendered for every index within the allCachedTodos
+	const ListItem = ({ todo: { item: oneOfTheTodos } }) => {
+		// console.log(oneOfTheTodos);
+		return (
+			<View
+				style={[
+					styles.listItem,
+					{
+						backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
+					},
+				]}
+			>
+				{/* //? Creates the checkbox and the respective TODO text around it */}
+				<View flex={1}>
+					<BouncyCheckbox
+						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+						unfillColor="white" //? Inner color of the checkbox
+						fillColor="green" //? Outer color (radius) of the checkbox
+						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+						text={oneOfTheTodos?.taskDescription} //? Todo text
+						iconStyle={{
+							borderWidth: 3, //? Make the TODO checkbox thicker than default
+						}}
+						textStyle={{
+							fontSize: 15, //? Not that big
+							fontWeight: 'bold', //? Strong
+							color: COLORS.primary, //? Contrasting purple
+							textDecorationLine: oneOfTheTodos?.completionStatus ? 'line-through' : 'none',
+							//? If the "todo" has "completionStatus" equal to "true",
+							//? line-through the text. Do nothing otherwise
+						}}
+					></BouncyCheckbox>
+				</View>
+				<TouchableOpacity style={[styles.deleteBox]}>
+					<ICON name="delete" size={20} color={COLORS.white}></ICON>
+				</TouchableOpacity>
+			</View>
+		);
 	};
 
 	return (
