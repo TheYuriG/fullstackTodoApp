@@ -1,7 +1,6 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
-import { newUser, login, logout } from '../firebase.js';
 
 const LoginScreen = () => {
 	//? Handles email data
