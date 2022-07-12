@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
 
 const LoginScreen = () => {
+	//? Handles email data
 	const [email, setEmail] = useState('');
+	//? Handles password data
 	const [password, setPassword] = useState('');
 
 	return (
@@ -15,16 +17,16 @@ const LoginScreen = () => {
 				<TextInput
 					placeholder="Email"
 					value={email}
-					onChangedText={(text) => setEmail(text)}
+					onChangeText={(text) => setEmail(text)}
 					style={styles.input}
 				></TextInput>
 				{/* //? Password field */}
 				<TextInput
 					placeholder="Password"
 					value={password}
-					onChangedText={(text) => setPassword(text)}
-					secureTextEntry
+					onChangeText={(text) => setPassword(text)}
 					style={styles.input}
+					secureTextEntry
 				></TextInput>
 			</View>
 			{/* //? Container for both Login/Register buttons */}
