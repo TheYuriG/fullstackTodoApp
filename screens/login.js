@@ -1,12 +1,15 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
+import { newUser, login, logout } from '../firebase.js';
 
 const LoginScreen = () => {
 	//? Handles email data
 	const [email, setEmail] = useState('');
 	//? Handles password data
 	const [password, setPassword] = useState('');
+	//? Handles password confirmation data
+	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard
@@ -31,10 +34,20 @@ const LoginScreen = () => {
 			</View>
 			{/* //? Container for both Login/Register buttons */}
 			<View style={styles.buttonContainer}>
-				<TouchableOpacity onPress={() => {}} style={styles.button}>
+				<TouchableOpacity
+					onPress={() => {
+						login(email, password);
+					}}
+					style={styles.button}
+				>
 					<Text style={styles.buttonText}>Login</Text>
 				</TouchableOpacity>
-				<TouchableOpacity onPress={() => {}} style={[styles.button, styles.buttonOutline]}>
+				<TouchableOpacity
+					onPress={() => {
+						newUser(email, password);
+					}}
+					style={[styles.button, styles.buttonOutline]}
+				>
 					<Text style={styles.buttonOutlineText}>Register</Text>
 				</TouchableOpacity>
 			</View>
