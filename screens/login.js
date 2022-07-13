@@ -9,12 +9,14 @@ const LoginScreen = () => {
 	const [password, setPassword] = useState('');
 	//? Handles password confirmation data
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
+	//? Handles if the user is trying to register
+	const [isRegistering, setIsRegistering] = useState(false);
 
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard
-		<KeyboardAvoidingView style={styles.container} behavior="padding">
+		<View style={styles.container} behavior="padding">
 			{/* //? Container that has both input fields */}
-			<View style={styles.inputContainer}>
+			<KeyboardAvoidingView style={styles.inputContainer}>
 				{/* //? Email field */}
 				<TextInput
 					placeholder="Email"
@@ -30,27 +32,59 @@ const LoginScreen = () => {
 					style={styles.input}
 					secureTextEntry
 				></TextInput>
-			</View>
+				{/* //? Password confirmation field */}
+				{isRegistering == true && (
+					<TextInput
+						placeholder="Confirm password"
+						value={passwordConfirmation}
+						onChangeText={(text) => setPasswordConfirmation(text)}
+						style={styles.input}
+						secureTextEntry
+					></TextInput>
+				)}
+			</KeyboardAvoidingView>
 			{/* //? Container for both Login/Register buttons */}
-			<View style={styles.buttonContainer}>
-				<TouchableOpacity
-					onPress={() => {
-						login(email, password);
-					}}
-					style={styles.button}
-				>
-					<Text style={styles.buttonText}>Login</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={() => {
-						newUser(email, password);
-					}}
-					style={[styles.button, styles.buttonOutline]}
-				>
-					<Text style={styles.buttonOutlineText}>Register</Text>
-				</TouchableOpacity>
-			</View>
-		</KeyboardAvoidingView>
+			{isRegistering == false && (
+				<View style={styles.buttonContainer}>
+					<TouchableOpacity
+						onPress={() => {
+							login(email, password);
+						}}
+						style={styles.button}
+					>
+						<Text style={styles.buttonText}>Login</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() => {
+							setIsRegistering(true);
+						}}
+						style={[styles.button, styles.buttonOutline]}
+					>
+						<Text style={styles.buttonOutlineText}>Register</Text>
+					</TouchableOpacity>
+				</View>
+			)}
+			{isRegistering == true && (
+				<KeyboardAvoidingView style={styles.buttonContainer}>
+					<TouchableOpacity
+						onPress={() => {
+							login(email, password);
+						}}
+						style={styles.button}
+					>
+						<Text style={styles.buttonText}>Register</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						onPress={() => {
+							setIsRegistering(false);
+						}}
+						style={[styles.button, styles.buttonOutline]}
+					>
+						<Text style={styles.buttonOutlineText}>Go back</Text>
+					</TouchableOpacity>
+				</KeyboardAvoidingView>
+			)}
+		</View>
 	);
 };
 
