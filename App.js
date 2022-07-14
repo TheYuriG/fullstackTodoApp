@@ -2,7 +2,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './screens/login';
-// import TodoScreen from './screens/todo';
+import TodoScreen from './screens/todo';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,9 +15,8 @@ export default function App() {
 					name="Login"
 					component={LoginScreen}
 				/>
+				<Stack.Screen options={{ headerShown: false }} name="todo" component={TodoScreen} />
 			</Stack.Navigator>
 		</NavigationContainer>
 	);
 }
-
-// <Stack.Screen options={{ headerShown: false }} name="Todo" component={TodoScreen} />

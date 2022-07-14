@@ -3,7 +3,7 @@ import React, { useState, setInput } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
 	//? Handles email data
 	const [email, setEmail] = useState('');
 	//? Handles password data
@@ -21,7 +21,6 @@ const LoginScreen = () => {
 			if (value !== null) {
 				setInput(JSON.parse(value));
 			}
-			console.log(input);
 		} catch (e) {
 			alert('Failed to fetch the login data from storage');
 		}
@@ -31,6 +30,7 @@ const LoginScreen = () => {
 		readData();
 		if (input?.[email] == password) {
 			console.log('login successful');
+			navigation.navigate('todo', { user: email });
 		} else {
 			Alert.alert('Failed to login', 'Invalid credentials');
 			setPassword('');
@@ -58,7 +58,7 @@ const LoginScreen = () => {
 		} catch (e) {
 			return alert('Failed to save the data to the storage');
 		}
-		console.log('Registration successful!');
+		navigation.navigate('todo', { user: email });
 	};
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard

@@ -1,153 +1,172 @@
 //? Dependencies
 import { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, FlatList, Alert } from 'react-native';
+import {
+	SafeAreaView,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+	FlatList,
+	Alert,
+} from 'react-native';
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 
 //? Colors theme
 const COLORS = { primary: '#800080', white: '#ffffff' };
 
-//? Tracks the text input at the footer
-const [textInput, setTextInput] = useState('');
-//? Tracks the TODO list in the app body
-const [allCachedTodos, setTodos] = useState([]);
+const TodoScreen = ({ navigation, route }) => {
+	//? Tracks the text input at the footer
+	const [textInput, setTextInput] = useState('');
+	//? Tracks the TODO list in the app body
+	const [allCachedTodos, setTodos] = useState([]);
 
-//? This is the function that will get whatever text was inputted at
-//? the bottom and add it to "allCachedTodos"
-const addTodo = () => {
-	//? Check if the textInput is empty when the user clicks the button
-	//? to add a new Todo. This should never run because we don't display
-	//? the "Add" button if the textInput is empty
-	if (textInput == '') {
-		Alert.alert('Error', 'Your todo input is empty');
-		return;
-	}
+	//? This is the function that will get whatever text was inputted at
+	//? the bottom and add it to "allCachedTodos"
+	const addTodo = () => {
+		//? Check if the textInput is empty when the user clicks the button
+		//? to add a new Todo. This should never run because we don't display
+		//? the "Add" button if the textInput is empty
+		if (textInput == '') {
+			Alert.alert('Error', 'Your todo input is empty');
+			return;
+		}
 
-	//? If the textInput contains content, we create a new Todo with it
-	const newTodo = {
-		id: allCachedTodos.length + 1,
-		taskDescription: textInput,
-		completionStatus: false,
+		//? If the textInput contains content, we create a new Todo with it
+		const newTodo = {
+			id: allCachedTodos.length + 1,
+			taskDescription: textInput,
+			completionStatus: false,
+		};
+
+		//? Then we append the new TODO to the end of the list
+		setTodos([...allCachedTodos, newTodo]);
+		//? And reset the input so the user doesn't have to
+		setTextInput('');
 	};
 
-	//? Then we append the new TODO to the end of the list
-	setTodos([...allCachedTodos, newTodo]);
-	//? And reset the input so the user doesn't have to
-	setTextInput('');
-};
-
-//? This function will delete one or all todos from the list, depending
-//? if the removal button was clicked in the header or within one todo
-const deleteTodo = (deletionTodoId) => {
-	//? Checks if the deletion button was clicked at the top to
-	//? delete all items. The "0000" string is a placeholder and
-	//? could be replaced by anything else
-	if (deletionTodoId === '0000') {
-		Alert.alert('Clear todos?', 'Warning: This action is not reversible!', [
-			{ text: 'Confirm', onPress: () => setTodos([]) },
-			{ text: 'Cancel' },
-		]);
-		return;
-	}
-	//? Iterate through the array of Todos and return all items but the
-	//? one that has the ID matching the ID we are trying to delete
-	const filteredTodoArray = allCachedTodos.filter((singleTodo) => singleTodo.id !== deletionTodoId);
-
-	//? Update the UI with the remaining Todos
-	setTodos(filteredTodoArray);
-};
-
-//? Update the status of this TODO. True will become false and vice versa
-const changeTodoStatus = (status, completingTodoId) => {
-	//? Iterate through the whole array of cached TODOs
-	const updatedTodos = allCachedTodos.map((oneTodoFromArray) => {
-		//? Find the TODO which the user clicked/tapped
-		if (oneTodoFromArray.id == completingTodoId) {
-			//? Change its completion state to what the tap tracked to change
-			oneTodoFromArray.completionStatus = status;
+	//? This function will delete one or all todos from the list, depending
+	//? if the removal button was clicked in the header or within one todo
+	const deleteTodo = (deletionTodoId) => {
+		//? Checks if the deletion button was clicked at the top to
+		//? delete all items. The "0000" string is a placeholder and
+		//? could be replaced by anything else
+		if (deletionTodoId === '0000') {
+			Alert.alert('Clear todos?', 'Warning: This action is not reversible!', [
+				{ text: 'Confirm', onPress: () => setTodos([]) },
+				{ text: 'Cancel' },
+			]);
+			return;
 		}
-		return oneTodoFromArray;
-	});
-	//? Update TODO list state
-	setTodos([...updatedTodos]);
-};
+		//? Iterate through the array of Todos and return all items but the
+		//? one that has the ID matching the ID we are trying to delete
+		const filteredTodoArray = allCachedTodos.filter(
+			(singleTodo) => singleTodo.id !== deletionTodoId
+		);
 
-//? This is the component that will be rendered for every index within the allCachedTodos
-const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
-	<View
-		style={[
-			styles.listItem,
-			{
-				backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
-			},
-		]}
-	>
-		{/* //? Creates the checkbox and the respective TODO text around it */}
-		<View flex={1}>
-			<BouncyCheckbox
-				onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-				unfillColor="white" //? Inner color of the checkbox
-				fillColor="green" //? Outer color (radius) of the checkbox
-				isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-				text={oneOfTheTodos?.taskDescription} //? Todo text
-				iconStyle={{
-					borderWidth: 3, //? Make the TODO checkbox thicker than default
-				}}
-				textStyle={{
-					fontSize: 15, //? Not that big
-					fontWeight: 'bold', //? Strong
-					color: COLORS.primary, //? Contrasting purple
-					textDecorationLine: oneOfTheTodos?.completionStatus ? 'line-through' : 'none',
-					//? If the "todo" has "completionStatus" equal to "true",
-					//? line-through the text. Do nothing otherwise
-				}}
-			></BouncyCheckbox>
-		</View>
-		<TouchableOpacity style={[styles.deleteBox]}>
-			<ICON name="delete" size={20} color={COLORS.white} onPress={() => deleteTodo(oneOfTheTodos?.id)}></ICON>
-		</TouchableOpacity>
-	</View>
-);
+		//? Update the UI with the remaining Todos
+		setTodos(filteredTodoArray);
+	};
 
-const TodoScreen = () => (
-	<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
-		{/* //? Section for the header, that has the bold title for our application */}
-		<View style={styles.header}>
-			<Text style={styles.headerText}>To-Do List</Text>
-			{/* //? The UI will only render the DELETE ALL button on the header
-            //? if there is even anything to be deleted in the first place */}
-			{allCachedTodos.length > 0 && (
-				<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
-			)}
-		</View>
-		{/* //? Section for the TODO list */}
-		<FlatList
-			showVerticalScrollIndicator={false}
-			contentContainerStyle={{ padding: 10 }}
-			data={allCachedTodos}
-			renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
-		/>
-		{/* //? Section for the footer where we can add new items to the list */}
-		<View style={styles.footer}>
-			{/* //? Footer's input data section */}
-			<View style={styles.inputContainer}>
-				<TextInput
-					placeholder="Add new todo..."
-					value={textInput}
-					onChangeText={(text) => setTextInput(text)}
-				></TextInput>
+	//? Update the status of this TODO. True will become false and vice versa
+	const changeTodoStatus = (status, completingTodoId) => {
+		//? Iterate through the whole array of cached TODOs
+		const updatedTodos = allCachedTodos.map((oneTodoFromArray) => {
+			//? Find the TODO which the user clicked/tapped
+			if (oneTodoFromArray.id == completingTodoId) {
+				//? Change its completion state to what the tap tracked to change
+				oneTodoFromArray.completionStatus = status;
+			}
+			return oneTodoFromArray;
+		});
+		//? Update TODO list state
+		setTodos([...updatedTodos]);
+	};
+
+	//? This is the component that will be rendered for every index within the allCachedTodos
+	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
+		<View
+			style={[
+				styles.listItem,
+				{
+					backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
+				},
+			]}
+		>
+			{/* //? Creates the checkbox and the respective TODO text around it */}
+			<View flex={1}>
+				<BouncyCheckbox
+					onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+					unfillColor="white" //? Inner color of the checkbox
+					fillColor="green" //? Outer color (radius) of the checkbox
+					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+					text={oneOfTheTodos?.taskDescription} //? Todo text
+					iconStyle={{
+						borderWidth: 3, //? Make the TODO checkbox thicker than default
+					}}
+					textStyle={{
+						fontSize: 15, //? Not that big
+						fontWeight: 'bold', //? Strong
+						color: COLORS.primary, //? Contrasting purple
+						textDecorationLine: oneOfTheTodos?.completionStatus
+							? 'line-through'
+							: 'none',
+						//? If the "todo" has "completionStatus" equal to "true",
+						//? line-through the text. Do nothing otherwise
+					}}
+				></BouncyCheckbox>
 			</View>
-			{/* //? Footer's "Add" button only renders if the textInput above isn't empty */}
-			{textInput != '' && (
-				<TouchableOpacity onPress={addTodo}>
-					<View style={styles.iconContainer}>
-						<ICON name="add" color={COLORS.white} size={30} />
-					</View>
-				</TouchableOpacity>
-			)}
+			<TouchableOpacity style={[styles.deleteBox]}>
+				<ICON
+					name="delete"
+					size={20}
+					color={COLORS.white}
+					onPress={() => deleteTodo(oneOfTheTodos?.id)}
+				></ICON>
+			</TouchableOpacity>
 		</View>
-	</SafeAreaView>
-);
+	);
+	return (
+		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
+			{/* //? Section for the header, that has the bold title for our application */}
+			<View style={styles.header}>
+				<Text style={styles.headerText}>To-Do List</Text>
+				{/* //? The UI will only render the DELETE ALL button on the header
+            //? if there is even anything to be deleted in the first place */}
+				{allCachedTodos.length > 0 && (
+					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
+				)}
+			</View>
+			{/* //? Section for the TODO list */}
+			<FlatList
+				showVerticalScrollIndicator={false}
+				contentContainerStyle={{ padding: 10 }}
+				data={allCachedTodos}
+				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
+			/>
+			{/* //? Section for the footer where we can add new items to the list */}
+			<View style={styles.footer}>
+				{/* //? Footer's input data section */}
+				<View style={styles.inputContainer}>
+					<TextInput
+						placeholder="Add new todo..."
+						value={textInput}
+						onChangeText={(text) => setTextInput(text)}
+					></TextInput>
+				</View>
+				{/* //? Footer's "Add" button only renders if the textInput above isn't empty */}
+				{textInput != '' && (
+					<TouchableOpacity onPress={addTodo}>
+						<View style={styles.iconContainer}>
+							<ICON name="add" color={COLORS.white} size={30} />
+						</View>
+					</TouchableOpacity>
+				)}
+			</View>
+		</SafeAreaView>
+	);
+};
 
 export default TodoScreen;
 
