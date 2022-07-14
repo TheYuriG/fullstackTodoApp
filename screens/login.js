@@ -1,7 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import React, { useState, setInput } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'; //? Documentation: https://react-native-async-storage.github.io/async-storage/docs/usage/
 
 const LoginScreen = ({ navigation }) => {
 	//? Handles email data
