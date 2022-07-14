@@ -1,6 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, setInput } from 'react';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
 	//? Handles email data
@@ -11,6 +12,23 @@ const LoginScreen = () => {
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	//? Handles if the user is trying to register
 	const [isRegistering, setIsRegistering] = useState(false);
+
+	const [input, setInput] = useState({ admin: 'adminpassword' });
+
+	const readData = async () => {
+		try {
+			const value = await AsyncStorage.getItem('logins');
+			if (value !== null) {
+				setInput(JSON.parse(value));
+			}
+		} catch (e) {
+			alert('Failed to fetch the login data from storage');
+		}
+	};
+
+	useEffect(() => {
+		readData();
+	}, []);
 
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard
