@@ -13,7 +13,7 @@ const LoginScreen = () => {
 	//? Handles if the user is trying to register
 	const [isRegistering, setIsRegistering] = useState(false);
 
-	const [input, setInput] = useState({ admin: 'adminpassword' });
+	const [input, setInput] = useState({ 'admin@domain.com': 'adminpassword' });
 
 	const readData = async () => {
 		try {
@@ -21,15 +21,45 @@ const LoginScreen = () => {
 			if (value !== null) {
 				setInput(JSON.parse(value));
 			}
+			console.log(input);
 		} catch (e) {
 			alert('Failed to fetch the login data from storage');
 		}
 	};
 
-	useEffect(() => {
+	const login = (email, password) => {
 		readData();
-	}, []);
+		if (input?.[email] == password) {
+			console.log('login successful');
+		} else {
+			Alert.alert('Failed to login', 'Invalid credentials');
+			setPassword('');
+		}
+	};
 
+	const register = async (email, password, passwordConfirmation) => {
+		readData();
+		if (password !== passwordConfirmation) {
+			Alert.alert('Failed to register', 'Passwords do not match!');
+			setPassword('');
+			setPasswordConfirmation('');
+			return;
+		} else if (input[email] != undefined) {
+			Alert.alert('Failed to register', 'This email was already used!');
+			setEmail('');
+			setPassword('');
+			setPasswordConfirmation('');
+			return;
+		}
+		input[email] = password;
+		setInput(input);
+		try {
+			await AsyncStorage.setItem('logins', JSON.stringify(input));
+		} catch (e) {
+			return alert('Failed to save the data to the storage');
+		}
+		console.log('Registration successful!');
+	};
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard
 		<View style={styles.container} behavior="padding">
@@ -86,7 +116,7 @@ const LoginScreen = () => {
 				<KeyboardAvoidingView style={styles.buttonContainer}>
 					<TouchableOpacity
 						onPress={() => {
-							login(email, password);
+							register(email, password, passwordConfirmation);
 						}}
 						style={styles.button}
 					>
