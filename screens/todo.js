@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
 	SafeAreaView,
 	StyleSheet,
+	Modal,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -10,6 +11,7 @@ import {
 	FlatList,
 	Alert,
 } from 'react-native';
+import DatePicker from 'react-native-date-picker'; //? Documentation: https://github.com/henninghall/react-native-date-picker
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 
@@ -21,6 +23,10 @@ const TodoScreen = ({ navigation, route }) => {
 	const [textInput, setTextInput] = useState('');
 	//? Tracks the TODO list in the app body
 	const [allCachedTodos, setTodos] = useState([]);
+	//? Tracks the TODO time limit
+	const [date, setDate] = useState(new Date());
+	//? Manages the opening and closing of the date picker
+	const [modalVisible, setModalVisible] = useState(false);
 
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
@@ -35,15 +41,18 @@ const TodoScreen = ({ navigation, route }) => {
 
 		//? If the textInput contains content, we create a new Todo with it
 		const newTodo = {
-			id: allCachedTodos.length + 1,
+			id: (allCachedTodos[allCachedTodos.length - 1]?.id ?? 0) + 1,
 			taskDescription: textInput,
 			completionStatus: false,
+			creationTime: new Date(),
+			targetDate: date,
 		};
 
 		//? Then we append the new TODO to the end of the list
 		setTodos([...allCachedTodos, newTodo]);
 		//? And reset the input so the user doesn't have to
 		setTextInput('');
+		setDate(new Date());
 	};
 
 	//? This function will delete one or all todos from the list, depending
@@ -90,22 +99,35 @@ const TodoScreen = ({ navigation, route }) => {
 			style={[
 				styles.listItem,
 				{
-					backgroundColor: oneOfTheTodos?.completionStatus ? '#90ee90' : 'white',
+					//? Background color will be defined by these principles:
+					//? (1) check if the task was finished and paint it green if so
+					//? (2) check if there is still time to complete the task, paint
+					//? the background white if so.
+					//? (3) If both of the previous checks failed, it means that the
+					//? task isn't completed yet and it ran out of time, so paint it red
+					backgroundColor: oneOfTheTodos?.completionStatus
+						? '#90ee90'
+						: oneOfTheTodos?.targetDate < new Date()
+						? '#eeaaaa'
+						: 'white',
 				},
 			]}
 		>
 			{/* //? Creates the checkbox and the respective TODO text around it */}
-			<View flex={1}>
-				<BouncyCheckbox
-					onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-					unfillColor="white" //? Inner color of the checkbox
-					fillColor="green" //? Outer color (radius) of the checkbox
-					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-					text={oneOfTheTodos?.taskDescription} //? Todo text
-					iconStyle={{
-						borderWidth: 3, //? Make the TODO checkbox thicker than default
-					}}
-					textStyle={{
+			<View flex={1} flexDirection="row">
+				{(oneOfTheTodos?.targetDate > new Date() || oneOfTheTodos?.completionStatus) && (
+					<BouncyCheckbox
+						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+						unfillColor="white" //? Inner color of the checkbox
+						fillColor="green" //? Outer color (radius) of the checkbox
+						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+						iconStyle={{
+							borderWidth: 3, //? Make the TODO checkbox thicker than default
+						}}
+					></BouncyCheckbox>
+				)}
+				<Text
+					style={{
 						fontSize: 15, //? Not that big
 						fontWeight: 'bold', //? Strong
 						color: COLORS.primary, //? Contrasting purple
@@ -114,9 +136,24 @@ const TodoScreen = ({ navigation, route }) => {
 							: 'none',
 						//? If the "todo" has "completionStatus" equal to "true",
 						//? line-through the text. Do nothing otherwise
+						textAlignVertical: 'center', //? Center the text vertically
 					}}
-				></BouncyCheckbox>
+				>
+					{oneOfTheTodos?.taskDescription}
+				</Text>
 			</View>
+			{!oneOfTheTodos?.completionStatus && (
+				<View marginRight={5}>
+					<TouchableOpacity style={[styles.deleteBox, { backgroundColor: 'grey' }]}>
+						<ICON
+							name="edit"
+							size={20}
+							color={COLORS.white}
+							onPress={() => editTodo(oneOfTheTodos?.id)}
+						></ICON>
+					</TouchableOpacity>
+				</View>
+			)}
 			<TouchableOpacity style={[styles.deleteBox]}>
 				<ICON
 					name="delete"
@@ -127,6 +164,7 @@ const TodoScreen = ({ navigation, route }) => {
 			</TouchableOpacity>
 		</View>
 	);
+
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
 			{/* //? Section for the header, that has the bold title for our application */}
@@ -138,6 +176,39 @@ const TodoScreen = ({ navigation, route }) => {
 					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
 				)}
 			</View>
+			<Modal
+				animationType="slide"
+				transparent={true}
+				visible={modalVisible}
+				// onRequestClose={() => {
+				// 	Alert.alert('Modal has been closed.');
+				// 	setModalVisible(!modalVisible);
+				// }}
+			>
+				<View style={styles.centeredView}>
+					<View style={styles.modalView}>
+						<Text style={styles.modalText}>Pick the limit for this task:</Text>
+						<DatePicker date={date} onDateChange={setDate} />
+						<View style={styles.buttonsRow}>
+							<TouchableOpacity
+								style={[styles.button, styles.buttonOpen]}
+								onPress={() => setModalVisible(!modalVisible)}
+							>
+								<Text style={styles.textStyle}>Close</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[styles.button, styles.buttonClose, { marginLeft: 10 }]}
+								onPress={() => {
+									addTodo();
+									setModalVisible(!modalVisible);
+								}}
+							>
+								<Text style={styles.textStyle}>Select Date</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</View>
+			</Modal>
 			{/* //? Section for the TODO list */}
 			<FlatList
 				showVerticalScrollIndicator={false}
@@ -157,7 +228,7 @@ const TodoScreen = ({ navigation, route }) => {
 				</View>
 				{/* //? Footer's "Add" button only renders if the textInput above isn't empty */}
 				{textInput != '' && (
-					<TouchableOpacity onPress={addTodo}>
+					<TouchableOpacity onPress={() => setModalVisible(true)}>
 						<View style={styles.iconContainer}>
 							<ICON name="add" color={COLORS.white} size={30} />
 						</View>
@@ -235,5 +306,51 @@ const styles = StyleSheet.create({
 		borderRadius: 25, //? Rounds the edges of the icon box
 		justifyContent: 'center', //? Vertically aligns the icon within the box
 		alignItems: 'center', //? Horizontally aligns the icon within the box
+	},
+	buttonsRow: {
+		width: '100%',
+		flexDirection: 'row', //? Display items horizontally within the footer
+		alignSelf: 'flex-end',
+	},
+	centeredView: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginTop: 22,
+	},
+	modalView: {
+		margin: 20,
+		backgroundColor: 'white',
+		borderRadius: 20,
+		padding: 35,
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: {
+			width: 0,
+			height: 2,
+		},
+		shadowOpacity: 0.25,
+		shadowRadius: 4,
+		elevation: 5,
+	},
+	button: {
+		borderRadius: 20,
+		padding: 10,
+		elevation: 2,
+	},
+	buttonOpen: {
+		backgroundColor: '#F194FF',
+	},
+	buttonClose: {
+		backgroundColor: COLORS.primary,
+	},
+	textStyle: {
+		color: 'white',
+		fontWeight: 'bold',
+		textAlign: 'center',
+	},
+	modalText: {
+		marginBottom: 15,
+		textAlign: 'center',
 	},
 });
