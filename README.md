@@ -3,9 +3,10 @@ This is an example of TODO app that is fully integrated with a database and has 
 
 ### Usage
 Clone this project and install all dependencies. Make sure you have the latest version of expo-cli installed globally on your machine and then build the project with `expo run:android`. After the build finishes, copy the files to the respective folders they belong:
-- `android/google-services.json`
+- `android/app/google-services.json`
 - `android/app/build.gradle`
-- `android/app/build.gradle`
+- `android/build.gradle`
+Alternatively, your git will mention that these files were changed between the clone and the build, just restore them using the git control panel and you are good to go.
 
 ##### Features
 - Easy to create and delete TODOs.
