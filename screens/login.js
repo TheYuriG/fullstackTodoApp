@@ -14,43 +14,59 @@ const LoginScreen = ({ navigation }) => {
 	const [isRegistering, setIsRegistering] = useState(false);
 	//? Checks if the login data object was loaded on memory
 	const [dataLoaded, setLoad] = useState(false);
-
+	//? This holds default values for the local database
 	const [input, setInput] = useState({ 'admin@domain.com': 'adminpassword' });
 
+	//? Prompts to read the data from AsyncStorage
 	const readData = async () => {
 		try {
+			//? Loads asynchronously from storage
 			const value = await AsyncStorage.getItem('logins');
 			if (value !== null) {
+				//? Parse data as object
 				setInput(JSON.parse(value));
-				console.log('Data loaded into memory');
 			}
 		} catch (e) {
+			//? Alert user if fails
 			alert('Failed to fetch the login data from storage');
 		}
 	};
 
+	//? Compares the email/password input from user to database entries
+	//? cached in "input"
 	const login = (email, password) => {
+		//? Check if the email and password provide a good match in the database
 		if (input?.[email] == password) {
+			//? If successful, navigate to the next screen while providing
+			//? the email as navigation parameters
 			navigation.navigate('todo', { user: email });
 		} else {
+			//? If the email isn't present or the password doesn't match,
+			//? inform the user of login failure
 			Alert.alert('Failed to login', 'Invalid credentials');
 			setPassword('');
 		}
 	};
 
+	//? Creates a new login entry on local storage
 	const register = async (email, password, passwordConfirmation) => {
+		//? Checks if the password and password confirmation match
 		if (password !== passwordConfirmation) {
 			Alert.alert('Failed to register', 'Passwords do not match!');
 			setPassword('');
 			setPasswordConfirmation('');
 			return;
-		} else if (input[email] != undefined) {
+		}
+		//? Check if the database already has an entry for this email
+		else if (input[email] != undefined) {
 			Alert.alert('Failed to register', 'This email was already used!');
 			setEmail('');
 			setPassword('');
 			setPasswordConfirmation('');
 			return;
 		}
+		//? If neither of the previous checks failed, create the user and
+		//? save it to the database
 		input[email] = password;
 		setInput(input);
 		try {
@@ -58,11 +74,16 @@ const LoginScreen = ({ navigation }) => {
 		} catch (e) {
 			return alert('Failed to save the data to the storage');
 		}
+		//? After a successful user creation, move to the next page
+		//? while providing this user as parameters to the navigator
 		navigation.navigate('todo', { user: email });
 	};
 
+	//? Check if the data wasn't loaded on memory yet and force a load
 	if (!dataLoaded) {
 		readData();
+		//? Set "dataLoaded" as true to avoid an infinite data load loop
+		//? by running this if check infinite times
 		setLoad(true);
 	}
 
