@@ -12,6 +12,8 @@ const LoginScreen = ({ navigation }) => {
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	//? Handles if the user is trying to register
 	const [isRegistering, setIsRegistering] = useState(false);
+	//? Checks if the login data object was loaded on memory
+	const [dataLoaded, setLoad] = useState(false);
 
 	const [input, setInput] = useState({ 'admin@domain.com': 'adminpassword' });
 
@@ -20,6 +22,7 @@ const LoginScreen = ({ navigation }) => {
 			const value = await AsyncStorage.getItem('logins');
 			if (value !== null) {
 				setInput(JSON.parse(value));
+				console.log('Data loaded into memory');
 			}
 		} catch (e) {
 			alert('Failed to fetch the login data from storage');
@@ -27,9 +30,7 @@ const LoginScreen = ({ navigation }) => {
 	};
 
 	const login = (email, password) => {
-		readData();
 		if (input?.[email] == password) {
-			console.log('login successful');
 			navigation.navigate('todo', { user: email });
 		} else {
 			Alert.alert('Failed to login', 'Invalid credentials');
@@ -38,7 +39,6 @@ const LoginScreen = ({ navigation }) => {
 	};
 
 	const register = async (email, password, passwordConfirmation) => {
-		readData();
 		if (password !== passwordConfirmation) {
 			Alert.alert('Failed to register', 'Passwords do not match!');
 			setPassword('');
@@ -60,6 +60,12 @@ const LoginScreen = ({ navigation }) => {
 		}
 		navigation.navigate('todo', { user: email });
 	};
+
+	if (!dataLoaded) {
+		readData();
+		setLoad(true);
+	}
+
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard
 		<View style={styles.container} behavior="padding">
