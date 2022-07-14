@@ -6,6 +6,7 @@ Clone this project and install all dependencies. Make sure you have the latest v
 - `android/app/google-services.json`
 - `android/app/build.gradle`
 - `android/build.gradle`
+
 Alternatively, your git will mention that these files were changed between the clone and the build, just restore them using the git control panel and you are good to go.
 
 ##### Features
