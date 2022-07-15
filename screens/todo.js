@@ -86,12 +86,11 @@ const TodoScreen = ({ navigation, route }) => {
 		firestore()
 			.collection('Todos')
 			.add(newTodo)
-			.then(() => {
+			.catch((err) => alert('failed to save this todo on the database: ' + err));
+
 				//? And reset the input so the user doesn't have to
 				setTextInput('');
 				setDate(new Date());
-			})
-			.catch((err) => alert('failed to save this todo on the database: ' + err));
 	};
 
 	//? This function will delete one or all todos from the list, depending
