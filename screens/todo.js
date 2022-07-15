@@ -177,41 +177,40 @@ const TodoScreen = ({ navigation, route }) => {
 					}}
 				></BouncyCheckbox>
 				<Text
-					style={{
-						fontSize: 15, //? Not that big
-						fontWeight: 'bold', //? Strong
-						color: COLORS.primary, //? Contrasting purple
-						textDecorationLine: oneOfTheTodos?.completionStatus
-							? 'line-through'
-							: 'none',
-						//? If the "todo" has "completionStatus" equal to "true",
-						//? line-through the text. Do nothing otherwise
-						textAlignVertical: 'center', //? Center the text vertically
-					}}
+					style={[
+						styles.listItemText,
+						{
+							textDecorationLine: oneOfTheTodos?.completionStatus
+								? 'line-through'
+								: 'none',
+						},
+					]}
 				>
 					{oneOfTheTodos?.taskDescription}
 				</Text>
 			</View>
-			{!oneOfTheTodos?.completionStatus && (
-				<View marginRight={5}>
-					<TouchableOpacity style={[styles.deleteBox, { backgroundColor: 'grey' }]}>
-						<ICON
-							name="edit"
-							size={20}
-							color={COLORS.white}
-							onPress={() => editTodo(oneOfTheTodos?.id)}
-						></ICON>
-					</TouchableOpacity>
-				</View>
-			)}
-			<TouchableOpacity style={[styles.deleteBox]}>
-				<ICON
-					name="delete"
-					size={20}
-					color={COLORS.white}
-					onPress={() => deleteTodo(oneOfTheTodos?.id)}
-				></ICON>
-			</TouchableOpacity>
+			<View style={styles.iconsArea}>
+				{!oneOfTheTodos?.completionStatus && (
+					<View marginRight={5}>
+						<TouchableOpacity style={[styles.deleteBox, { backgroundColor: 'grey' }]}>
+							<ICON
+								name="edit"
+								size={20}
+								color={COLORS.white}
+								onPress={() => editTodo(oneOfTheTodos?.id)}
+							></ICON>
+						</TouchableOpacity>
+					</View>
+				)}
+				<TouchableOpacity style={[styles.deleteBox]}>
+					<ICON
+						name="delete"
+						size={20}
+						color={COLORS.white}
+						onPress={() => deleteTodo(oneOfTheTodos?.id)}
+					></ICON>
+				</TouchableOpacity>
+			</View>
 		</View>
 	);
 
@@ -226,15 +225,8 @@ const TodoScreen = ({ navigation, route }) => {
 					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
 				)}
 			</View>
-			<Modal
-				animationType="slide"
-				transparent={true}
-				visible={modalVisible}
-				// onRequestClose={() => {
-				// 	Alert.alert('Modal has been closed.');
-				// 	setModalVisible(!modalVisible);
-				// }}
-			>
+			{/* //? This is the prompt box that displays once you click to add a todo */}
+			<Modal animationType="slide" transparent={true} visible={modalVisible}>
 				<View style={styles.centeredView}>
 					<View style={styles.modalView}>
 						<Text style={styles.modalText}>Pick the limit for this task:</Text>
@@ -262,6 +254,7 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? Section for the TODO list */}
 			<FlatList
 				showVerticalScrollIndicator={false}
+				style={{ backgroundColor: 'coral', flex: 1 }}
 				contentContainerStyle={{ padding: 10 }}
 				data={allCachedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
@@ -294,11 +287,11 @@ export default TodoScreen;
 const styles = StyleSheet.create({
 	//? The title of our app
 	header: {
-		margin: 10, //? Outer spacing to separate our container from the other containers or device edges
-		padding: 20, //? Inner spacing between items and the edges of the container
+		padding: 15, //? Inner spacing between items and the edges of the container
 		flexDirection: 'row', //? How the items should be align (Row = horizontal)
 		alignItems: 'center', //? Align items vertically on the axis
 		justifyContent: 'space-between', //? Put space between the items, but not around them
+		backgroundColor: 'pink',
 	},
 	//? Inner text of the title of our app
 	headerText: {
@@ -308,12 +301,27 @@ const styles = StyleSheet.create({
 	},
 	//? Styling for each individual box of our todo list
 	listItem: {
-		padding: 15, //? Inner spacing between items and the edges of the container
-		flexDirection: 'row',
-		elevation: 12, //? Gives the impression of depth/distance from the background
-		marginVertical: 10, //? Outer vertical spacing to separate our container from the other containers or device edges
+		padding: 5, //? Inner spacing between items and the edges of the container
+		flexDirection: 'row', //? Display items on the horizontal axis
+		elevation: 10, //? Gives the impression of depth/distance from the background
+		marginVertical: 5, //? Outer vertical spacing to separate our container from the other containers or device edges
 		marginLeft: 5, //? Outer left spacing to separate our container from the other containers or device edges
-		borderRadius: 10, //? Rounds the edges of the list Item box
+		borderRadius: 20, //? Rounds the edges of the list Item box
+	},
+	listItemText: {
+		fontSize: 15, //? Not that big
+		fontWeight: 'bold', //? Strong
+		color: COLORS.primary, //? Contrasting purple
+		//? If the "todo" has "completionStatus" equal to "true",
+		//? line-through the text. Do nothing otherwise
+		textAlignVertical: 'center', //? Center the text vertically
+	},
+	iconsArea: {
+		width: 60,
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'flex-end',
+		paddingRight: 10,
 	},
 	//? The red box that holds the deletion/trash icon
 	deleteBox: {
