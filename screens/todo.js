@@ -29,6 +29,38 @@ const TodoScreen = ({ navigation, route }) => {
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
 
+	function onResult(QuerySnapshot) {
+		// console.log(QuerySnapshot['_docs']);
+		const databaseFetchedTodos = QuerySnapshot['_docs'].map((document) => {
+			const individualDatabaseTodo = {
+				id: document._ref._documentPath._parts[1],
+				taskDescription: document._data.taskDescription,
+				completionStatus: document._data.completionStatus,
+				editedAt: document._data.editedAt.seconds,
+				creationTime: document._data.creationTime.seconds,
+				targetDate: document._data.targetDate.seconds,
+			};
+			// console.log(individualDatabaseTodo);
+			return individualDatabaseTodo;
+		});
+		// console.log('Cached todos:', allCachedTodos);
+		// console.log('Fetched todos:', databaseFetchedTodos);
+		// console.log('Equality test:', allCachedTodos.toString() == databaseFetchedTodos.toString());
+		if (allCachedTodos.toString() != databaseFetchedTodos.toString()) {
+			setTodos(databaseFetchedTodos);
+		}
+	}
+
+	function onError(error) {
+		console.error(error);
+	}
+
+	firestore()
+		.collection('Todos')
+		.where('taskOwner', '==', route.params.user)
+		//? .limit(10) for pagination
+		.onSnapshot(onResult, onError);
+
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
 	const addTodo = () => {
