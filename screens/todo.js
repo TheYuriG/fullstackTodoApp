@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
 	},
 	//? Text inside a todo item
 	listItemText: {
+		flex: 1,
 		fontSize: 15, //? Not that big
 		fontWeight: 'bold', //? Strong
 		color: COLORS.primary, //? Contrasting purple
@@ -321,7 +322,6 @@ const styles = StyleSheet.create({
 	},
 	//? Protecting area where the edit and delete buttons are
 	iconsArea: {
-		width: 120, //? Spacing on the icons to stop text from invading
 		flexDirection: 'row', //? Distribute edit and delete icons horizontally
 		alignItems: 'center', //? Align items centralized vertically
 		justifyContent: 'flex-end', //? Display items at the right end of the list
