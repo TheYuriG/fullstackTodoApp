@@ -106,14 +106,17 @@ const TodoScreen = ({ navigation, route }) => {
 			]);
 			return;
 		}
-		//? Iterate through the array of Todos and return all items but the
-		//? one that has the ID matching the ID we are trying to delete
-		const filteredTodoArray = allCachedTodos.filter(
-			(singleTodo) => singleTodo.id !== deletionTodoId
-		);
 
-		//? Update the UI with the remaining Todos
-		setTodos(filteredTodoArray);
+		//? Query firestore for this specific document ID and request a deletion
+		firestore()
+			.collection('Todos')
+			.doc(deletionTodoId)
+			.delete()
+			.then(() => {
+				//? Alert the user upon completion
+				alert('Todo deleted!');
+			})
+			.catch((error) => alert('Error deleting this todo: ' + error));
 	};
 
 	//? Update the status of this TODO. True will become false and vice versa
