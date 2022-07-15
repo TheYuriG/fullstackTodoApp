@@ -168,23 +168,25 @@ const TodoScreen = ({ navigation, route }) => {
 			]}
 		>
 			{/* //? Creates the checkbox and the respective TODO text around it */}
-			<View flex={1} flexDirection="row">
-				<BouncyCheckbox
-					onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-					unfillColor={
-						oneOfTheTodos?.completionStatus
-							? '#90ee90'
-							: oneOfTheTodos?.targetDate < new Date() / 1000
-							? '#eeaaaa'
-							: '#eeeeee'
-					} //? Inner color of the checkbox
-					fillColor="green" //? Outer color (radius) of the checkbox
-					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-					size={35} //? Size of the checkbox
-					iconStyle={{
-						borderWidth: 3, //? Make the TODO checkbox thicker than default
-					}}
-				></BouncyCheckbox>
+			<View flex={1} flexDirection="row" padding={5}>
+				{user !== 'admin@domain.com' && (
+					<BouncyCheckbox
+						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+						unfillColor={
+							oneOfTheTodos?.completionStatus
+								? '#90ee90'
+								: oneOfTheTodos?.targetDate < new Date() / 1000
+								? '#eeaaaa'
+								: '#eeeeee'
+						} //? Inner color of the checkbox
+						fillColor="green" //? Outer color (radius) of the checkbox
+						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+						size={35} //? Size of the checkbox
+						iconStyle={{
+							borderWidth: 3, //? Make the TODO checkbox thicker than default
+						}}
+					></BouncyCheckbox>
+				)}
 				{/* //? Task description text box */}
 				<Text
 					style={[
@@ -200,30 +202,34 @@ const TodoScreen = ({ navigation, route }) => {
 				</Text>
 			</View>
 			{/* //? View containing the edit and delete buttons */}
-			<View style={styles.iconsArea}>
-				{/* //? Edit button */}
-				{!oneOfTheTodos?.completionStatus && (
-					<View marginRight={5}>
-						<TouchableOpacity style={[styles.deleteBox, { backgroundColor: 'grey' }]}>
-							<ICON
-								name="edit"
-								size={20}
-								color={COLORS.white}
-								onPress={() => editTodo(oneOfTheTodos?.id)}
-							></ICON>
-						</TouchableOpacity>
-					</View>
-				)}
-				{/* //? Delete button */}
-				<TouchableOpacity style={[styles.deleteBox]}>
-					<ICON
-						name="delete"
-						size={20}
-						color={COLORS.white}
-						onPress={() => deleteTodo(oneOfTheTodos?.id)}
-					></ICON>
-				</TouchableOpacity>
-			</View>
+			{user !== 'admin@domain.com' && (
+				<View style={styles.iconsArea}>
+					{/* //? Edit button */}
+					{!oneOfTheTodos?.completionStatus && (
+						<View marginRight={5}>
+							<TouchableOpacity
+								style={[styles.deleteBox, { backgroundColor: 'grey' }]}
+							>
+								<ICON
+									name="edit"
+									size={20}
+									color={COLORS.white}
+									onPress={() => editTodo(oneOfTheTodos?.id)}
+								></ICON>
+							</TouchableOpacity>
+						</View>
+					)}
+					{/* //? Delete button */}
+					<TouchableOpacity style={[styles.deleteBox]}>
+						<ICON
+							name="delete"
+							size={20}
+							color={COLORS.white}
+							onPress={() => deleteTodo(oneOfTheTodos?.id)}
+						></ICON>
+					</TouchableOpacity>
+				</View>
+			)}
 		</View>
 	);
 
@@ -234,7 +240,7 @@ const TodoScreen = ({ navigation, route }) => {
 				<Text style={styles.headerText}>To-Do List</Text>
 				{/* //? The UI will only render the DELETE ALL button on the header
             //? if there is even anything to be deleted in the first place */}
-				{allCachedTodos.length > 0 && (
+				{allCachedTodos.length > 0 && user !== 'admin@domain.com' && (
 					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
 				)}
 			</View>
