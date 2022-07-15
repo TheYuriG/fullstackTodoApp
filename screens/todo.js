@@ -88,9 +88,9 @@ const TodoScreen = ({ navigation, route }) => {
 			.add(newTodo)
 			.catch((err) => alert('failed to save this todo on the database: ' + err));
 
-				//? And reset the input so the user doesn't have to
-				setTextInput('');
-				setDate(new Date());
+		//? And reset the input so the user doesn't have to
+		setTextInput('');
+		setDate(new Date());
 	};
 
 	//? This function will delete one or all todos from the list, depending
@@ -100,8 +100,20 @@ const TodoScreen = ({ navigation, route }) => {
 		//? delete all items. The "0000" string is a placeholder and
 		//? could be replaced by anything else
 		if (deletionTodoId === '0000') {
+			//? Function to iterate through this user's local todos and
+			//? send an individual deletion for each of them
+			const deleteAllTodos = () => {
+				allCachedTodos.forEach((todo) => {
+					firestore().collection('Todos').doc(todo.id).delete();
+				});
+			};
+
+			//? Prompt the user for confirmation regarding deleting all of their todos
 			Alert.alert('Clear todos?', 'Warning: This action is not reversible!', [
-				{ text: 'Confirm', onPress: () => setTodos([]) },
+				{
+					text: 'Confirm',
+					onPress: deleteAllTodos,
+				}, //? If confirmed, run the function "deleteAllTodos" above
 				{ text: 'Cancel' },
 			]);
 			return;
