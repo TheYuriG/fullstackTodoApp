@@ -29,8 +29,8 @@ const TodoScreen = ({ navigation, route }) => {
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
 
-	function onResult(QuerySnapshot) {
-		// console.log(QuerySnapshot['_docs']);
+	//? Processes the snapshot result of the database query for todos
+	function onSnapshotResult(QuerySnapshot) {
 		const databaseFetchedTodos = QuerySnapshot['_docs'].map((document) => {
 			const individualDatabaseTodo = {
 				id: document._ref._documentPath._parts[1],
@@ -40,26 +40,26 @@ const TodoScreen = ({ navigation, route }) => {
 				creationTime: document._data.creationTime.seconds,
 				targetDate: document._data.targetDate.seconds,
 			};
-			// console.log(individualDatabaseTodo);
 			return individualDatabaseTodo;
 		});
 		// console.log('Cached todos:', allCachedTodos);
 		// console.log('Fetched todos:', databaseFetchedTodos);
 		// console.log('Equality test:', allCachedTodos.toString() == databaseFetchedTodos.toString());
-		if (allCachedTodos.toString() != databaseFetchedTodos.toString()) {
-			setTodos(databaseFetchedTodos);
+		if (allCachedTodos.toString() != sortedByCreationTodos.toString()) {
+			setTodos(sortedByCreationTodos);
 		}
 	}
 
-	function onError(error) {
-		console.error(error);
+	//? Displays error upon snapshot error of the database query for todos
+	function onSnapshotError(error) {
+		alert('Failed to retrieve database data: ' + error);
 	}
 
 	firestore()
-		.collection('Todos')
-		.where('taskOwner', '==', route.params.user)
+		.collection('Todos') //? Queries the 'Todos' collection
+		.where('taskOwner', '==', route.params.user) //? Retrieves documents where the taskOwner is the same person who is logged in
 		//? .limit(10) for pagination
-		.onSnapshot(onResult, onError);
+		.onSnapshot(onSnapshotResult, onSnapshotError);
 
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
