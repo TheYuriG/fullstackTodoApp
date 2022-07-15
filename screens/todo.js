@@ -255,7 +255,7 @@ const TodoScreen = ({ navigation, route }) => {
 			<FlatList
 				showVerticalScrollIndicator={false}
 				style={{ backgroundColor: 'coral', flex: 1 }}
-				contentContainerStyle={{ padding: 10 }}
+				contentContainerStyle={{ padding: 5, paddingRight: 10, paddingBottom: 60 }}
 				data={allCachedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
 			/>
