@@ -55,11 +55,19 @@ const TodoScreen = ({ navigation, route }) => {
 		alert('Failed to retrieve database data: ' + error);
 	}
 
-	firestore()
-		.collection('Todos') //? Queries the 'Todos' collection
-		.where('taskOwner', '==', route.params.user) //? Retrieves documents where the taskOwner is the same person who is logged in
-		//? .limit(10) for pagination
-		.onSnapshot(onSnapshotResult, onSnapshotError);
+	const user = route.params.user;
+
+	if (user == 'admin@domain.com') {
+		firestore()
+			.collection('Todos') //? Queries the 'Todos' collection
+			.limit(10)
+			.onSnapshot(onSnapshotResult, onSnapshotError);
+	} else {
+		firestore()
+			.collection('Todos') //? Queries the 'Todos' collection
+			.where('taskOwner', '==', user) //? Retrieves documents where the taskOwner is the same person who is logged in
+			.onSnapshot(onSnapshotResult, onSnapshotError);
+	}
 
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
