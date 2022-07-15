@@ -237,10 +237,10 @@ const TodoScreen = ({ navigation, route }) => {
 						<DatePicker date={date} onDateChange={setDate} />
 						<View style={styles.buttonsRow}>
 							<TouchableOpacity
-								style={[styles.button, styles.buttonOpen]}
+								style={styles.button}
 								onPress={() => setModalVisible(!modalVisible)}
 							>
-								<Text style={styles.textStyle}>Close</Text>
+								<Text style={styles.listItemText}>Close</Text>
 							</TouchableOpacity>
 							<TouchableOpacity
 								style={[styles.button, styles.buttonClose, { marginLeft: 10 }]}
@@ -402,7 +402,6 @@ const styles = StyleSheet.create({
 	button: {
 		borderRadius: 20,
 		padding: 10,
-		elevation: 2,
 	},
 	//? Row of buttons inside the modal
 	buttonsRow: {
@@ -414,11 +413,6 @@ const styles = StyleSheet.create({
 	//! Could use refactoring
 	buttonOpen: {
 		backgroundColor: '#F194FF',
-	},
-	//? Cancel button on modal
-	//! Could use refactoring
-	buttonClose: {
-		backgroundColor: COLORS.primary,
 	},
 	//? Modal button text
 	//! Could use refactoring
