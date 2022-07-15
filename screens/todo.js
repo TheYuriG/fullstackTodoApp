@@ -133,17 +133,9 @@ const TodoScreen = ({ navigation, route }) => {
 
 	//? Update the status of this TODO. True will become false and vice versa
 	const changeTodoStatus = (status, completingTodoId) => {
-		//? Iterate through the whole array of cached TODOs
-		const updatedTodos = allCachedTodos.map((oneTodoFromArray) => {
-			//? Find the TODO which the user clicked/tapped
-			if (oneTodoFromArray.id == completingTodoId) {
-				//? Change its completion state to what the tap tracked to change
-				oneTodoFromArray.completionStatus = status;
-			}
-			return oneTodoFromArray;
+		firestore().collection('Todos').doc(completingTodoId).update({
+			completionStatus: status,
 		});
-		//? Update TODO list state
-		setTodos([...updatedTodos]);
 	};
 
 	//? This is the component that will be rendered for every index within the allCachedTodos
@@ -160,25 +152,30 @@ const TodoScreen = ({ navigation, route }) => {
 					//? task isn't completed yet and it ran out of time, so paint it red
 					backgroundColor: oneOfTheTodos?.completionStatus
 						? '#90ee90'
-						: oneOfTheTodos?.targetDate < new Date()
+						: oneOfTheTodos?.targetDate < new Date() / 1000
 						? '#eeaaaa'
-						: 'white',
+						: '#eeeeee',
 				},
 			]}
 		>
 			{/* //? Creates the checkbox and the respective TODO text around it */}
 			<View flex={1} flexDirection="row">
-				{(oneOfTheTodos?.targetDate > new Date() || oneOfTheTodos?.completionStatus) && (
-					<BouncyCheckbox
-						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-						unfillColor="white" //? Inner color of the checkbox
-						fillColor="green" //? Outer color (radius) of the checkbox
-						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-						iconStyle={{
-							borderWidth: 3, //? Make the TODO checkbox thicker than default
-						}}
-					></BouncyCheckbox>
-				)}
+				<BouncyCheckbox
+					onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
+					unfillColor={
+						oneOfTheTodos?.completionStatus
+							? '#90ee90'
+							: oneOfTheTodos?.targetDate < new Date() / 1000
+							? '#eeaaaa'
+							: '#eeeeee'
+					} //? Inner color of the checkbox
+					fillColor="green" //? Outer color (radius) of the checkbox
+					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+					size={35}
+					iconStyle={{
+						borderWidth: 3, //? Make the TODO checkbox thicker than default
+					}}
+				></BouncyCheckbox>
 				<Text
 					style={{
 						fontSize: 15, //? Not that big
