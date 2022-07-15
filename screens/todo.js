@@ -171,11 +171,12 @@ const TodoScreen = ({ navigation, route }) => {
 					} //? Inner color of the checkbox
 					fillColor="green" //? Outer color (radius) of the checkbox
 					isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-					size={35}
+					size={35} //? Size of the checkbox
 					iconStyle={{
 						borderWidth: 3, //? Make the TODO checkbox thicker than default
 					}}
 				></BouncyCheckbox>
+				{/* //? Task description text box */}
 				<Text
 					style={[
 						styles.listItemText,
@@ -189,7 +190,9 @@ const TodoScreen = ({ navigation, route }) => {
 					{oneOfTheTodos?.taskDescription}
 				</Text>
 			</View>
+			{/* //? View containing the edit and delete buttons */}
 			<View style={styles.iconsArea}>
+				{/* //? Edit button */}
 				{!oneOfTheTodos?.completionStatus && (
 					<View marginRight={5}>
 						<TouchableOpacity style={[styles.deleteBox, { backgroundColor: 'grey' }]}>
@@ -202,6 +205,7 @@ const TodoScreen = ({ navigation, route }) => {
 						</TouchableOpacity>
 					</View>
 				)}
+				{/* //? Delete button */}
 				<TouchableOpacity style={[styles.deleteBox]}>
 					<ICON
 						name="delete"
@@ -269,14 +273,12 @@ const TodoScreen = ({ navigation, route }) => {
 						onChangeText={(text) => setTextInput(text)}
 					></TextInput>
 				</View>
-				{/* //? Footer's "Add" button only renders if the textInput above isn't empty */}
-				{textInput != '' && (
-					<TouchableOpacity onPress={() => setModalVisible(true)}>
-						<View style={styles.iconContainer}>
-							<ICON name="add" color={COLORS.white} size={30} />
-						</View>
-					</TouchableOpacity>
-				)}
+				{/* //? Footer's "Add" button */}
+				<TouchableOpacity onPress={() => setModalVisible(true)}>
+					<View style={styles.iconContainer}>
+						<ICON name="add" color={COLORS.white} size={30} />
+					</View>
+				</TouchableOpacity>
 			</View>
 		</SafeAreaView>
 	);
@@ -308,6 +310,7 @@ const styles = StyleSheet.create({
 		marginLeft: 5, //? Outer left spacing to separate our container from the other containers or device edges
 		borderRadius: 20, //? Rounds the edges of the list Item box
 	},
+	//? Text inside a todo item
 	listItemText: {
 		fontSize: 15, //? Not that big
 		fontWeight: 'bold', //? Strong
@@ -316,18 +319,19 @@ const styles = StyleSheet.create({
 		//? line-through the text. Do nothing otherwise
 		textAlignVertical: 'center', //? Center the text vertically
 	},
+	//? Protecting area where the edit and delete buttons are
 	iconsArea: {
-		width: 60,
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'flex-end',
-		paddingRight: 10,
+		width: 120, //? Spacing on the icons to stop text from invading
+		flexDirection: 'row', //? Distribute edit and delete icons horizontally
+		alignItems: 'center', //? Align items centralized vertically
+		justifyContent: 'flex-end', //? Display items at the right end of the list
+		paddingRight: 10, //? Spacing between the delete icon and the edge of the list item
 	},
-	//? The red box that holds the deletion/trash icon
+	//? The red/grey box that holds the editing/deletion icon
 	deleteBox: {
 		height: 28, //? Determines how much height this will have
 		width: 25, //? Determines how much width this will have
-		backgroundColor: 'red', //? Defines the icon delete box to have a red background
+		backgroundColor: 'red', //? Defines the icon delete box to have a red background. The edit icon overrides this with grey
 		justifyContent: 'center', //? Vertically aligns the icon within the box
 		alignItems: 'center', //? Horizontally aligns the icon within the box
 		borderRadius: 5, //? Rounds the edges of the icon box
@@ -340,7 +344,6 @@ const styles = StyleSheet.create({
 		width: '100%', //? Makes the footer take the entire horizontal space, side to side
 		flexDirection: 'row', //? Display items horizontally within the footer
 		alignItems: 'center', //? Align items vertically within the footer
-		paddingHorizontal: 2, //? Horizontally space out internal items by 2 to the edges
 	},
 	//? Inside the footer, this will be the text container that will have the new TODO
 	inputContainer: {
@@ -365,17 +368,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center', //? Vertically aligns the icon within the box
 		alignItems: 'center', //? Horizontally aligns the icon within the box
 	},
-	buttonsRow: {
-		width: '100%',
-		flexDirection: 'row', //? Display items horizontally within the footer
-		alignSelf: 'flex-end',
-	},
-	centeredView: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		marginTop: 22,
-	},
+	//? The Date/Time box
 	modalView: {
 		margin: 20,
 		backgroundColor: 'white',
@@ -391,24 +384,47 @@ const styles = StyleSheet.create({
 		shadowRadius: 4,
 		elevation: 5,
 	},
+	//? Centers the Date/Time box
+	centeredView: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginTop: 22,
+	},
+	//? Modal text
+	//! Could use refactoring
+	modalText: {
+		marginBottom: 15,
+		textAlign: 'center',
+	},
+	//? Basic button definition for the modal box
+	//! Could use refactoring
 	button: {
 		borderRadius: 20,
 		padding: 10,
 		elevation: 2,
 	},
+	//? Row of buttons inside the modal
+	buttonsRow: {
+		width: '100%', //? Expand row to take all horizontal space in the modal
+		flexDirection: 'row', //? Display items horizontally within the modal
+		alignSelf: 'flex-end', //? Display items at the right end of the modal
+	},
+	//? Confirm button on modal
+	//! Could use refactoring
 	buttonOpen: {
 		backgroundColor: '#F194FF',
 	},
+	//? Cancel button on modal
+	//! Could use refactoring
 	buttonClose: {
 		backgroundColor: COLORS.primary,
 	},
+	//? Modal button text
+	//! Could use refactoring
 	textStyle: {
 		color: 'white',
 		fontWeight: 'bold',
-		textAlign: 'center',
-	},
-	modalText: {
-		marginBottom: 15,
 		textAlign: 'center',
 	},
 });
