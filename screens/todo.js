@@ -42,9 +42,9 @@ const TodoScreen = ({ navigation, route }) => {
 			};
 			return individualDatabaseTodo;
 		});
-		// console.log('Cached todos:', allCachedTodos);
-		// console.log('Fetched todos:', databaseFetchedTodos);
-		// console.log('Equality test:', allCachedTodos.toString() == databaseFetchedTodos.toString());
+		const sortedByCreationTodos = databaseFetchedTodos.sort(
+			(a, b) => a.creationTime > b.creationTime
+		);
 		if (allCachedTodos.toString() != sortedByCreationTodos.toString()) {
 			setTodos(sortedByCreationTodos);
 		}
@@ -74,18 +74,24 @@ const TodoScreen = ({ navigation, route }) => {
 
 		//? If the textInput contains content, we create a new Todo with it
 		const newTodo = {
-			id: (allCachedTodos[allCachedTodos.length - 1]?.id ?? 0) + 1,
 			taskDescription: textInput,
 			completionStatus: false,
 			creationTime: new Date(),
+			editedAt: new Date(),
 			targetDate: date,
+			taskOwner: route.params.user,
 		};
 
-		//? Then we append the new TODO to the end of the list
-		setTodos([...allCachedTodos, newTodo]);
-		//? And reset the input so the user doesn't have to
-		setTextInput('');
-		setDate(new Date());
+		//? Save this todo to the database
+		firestore()
+			.collection('Todos')
+			.add(newTodo)
+			.then(() => {
+				//? And reset the input so the user doesn't have to
+				setTextInput('');
+				setDate(new Date());
+			})
+			.catch((err) => alert('failed to save this todo on the database: ' + err));
 	};
 
 	//? This function will delete one or all todos from the list, depending
@@ -291,7 +297,7 @@ const styles = StyleSheet.create({
 	},
 	//? Styling for each individual box of our todo list
 	listItem: {
-		padding: 20, //? Inner spacing between items and the edges of the container
+		padding: 15, //? Inner spacing between items and the edges of the container
 		flexDirection: 'row',
 		elevation: 12, //? Gives the impression of depth/distance from the background
 		marginVertical: 10, //? Outer vertical spacing to separate our container from the other containers or device edges
