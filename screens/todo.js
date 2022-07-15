@@ -135,6 +135,7 @@ const TodoScreen = ({ navigation, route }) => {
 	const changeTodoStatus = (status, completingTodoId) => {
 		firestore().collection('Todos').doc(completingTodoId).update({
 			completionStatus: status,
+			editedAt: new Date(),
 		});
 	};
 
