@@ -14,6 +14,7 @@ import {
 import DatePicker from 'react-native-date-picker'; //? Documentation: https://github.com/henninghall/react-native-date-picker
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
+import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
 
 //? Colors theme
 const COLORS = { primary: '#800080', white: '#ffffff' };
