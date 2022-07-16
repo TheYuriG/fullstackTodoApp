@@ -17,7 +17,7 @@ import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: h
 import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
 
 //? Colors theme
-const COLORS = { primary: '#800080', white: '#ffffff' };
+const COLORS = { primary: '#800080', white: '#ffffff', grey: '#dddddd' };
 
 const TodoScreen = ({ navigation, route }) => {
 	//? Tracks the text input at the footer
@@ -163,7 +163,7 @@ const TodoScreen = ({ navigation, route }) => {
 						? '#90ee90'
 						: oneOfTheTodos?.targetDate < new Date() / 1000
 						? '#eeaaaa'
-						: '#eeeeee',
+						: COLORS.grey,
 				},
 			]}
 		>
@@ -177,7 +177,7 @@ const TodoScreen = ({ navigation, route }) => {
 								? '#90ee90'
 								: oneOfTheTodos?.targetDate < new Date() / 1000
 								? '#eeaaaa'
-								: '#eeeeee'
+								: COLORS.grey
 						} //? Inner color of the checkbox
 						fillColor="green" //? Outer color (radius) of the checkbox
 						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
@@ -247,9 +247,17 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? This is the prompt box that displays once you click to add a todo */}
 			<Modal animationType="slide" transparent={true} visible={modalVisible}>
 				<View style={styles.centeredView}>
-					<View style={styles.modalView}>
-						<Text style={styles.modalText}>Pick the limit for this task:</Text>
-						<DatePicker date={date} onDateChange={setDate} />
+					<View style={[styles.modalView, { backgroundColor: '#dddddd' }]}>
+						<Text style={[styles.listItemText, { flex: null }]}>
+							Pick the limit for this task:
+						</Text>
+						<DatePicker
+							date={date}
+							onDateChange={setDate}
+							minimumDate={new Date()}
+							textColor={COLORS.primary}
+							fadeToColor={COLORS.grey}
+						/>
 						<View style={styles.buttonsRow}>
 							<TouchableOpacity
 								style={styles.button}
@@ -258,7 +266,10 @@ const TodoScreen = ({ navigation, route }) => {
 								<Text style={styles.listItemText}>Close</Text>
 							</TouchableOpacity>
 							<TouchableOpacity
-								style={[styles.button, styles.buttonClose, { marginLeft: 10 }]}
+								style={[
+									styles.button,
+									{ backgroundColor: COLORS.primary, marginLeft: 10 },
+								]}
 								onPress={() => {
 									addTodo();
 									setModalVisible(!modalVisible);
@@ -423,11 +434,6 @@ const styles = StyleSheet.create({
 		width: '100%', //? Expand row to take all horizontal space in the modal
 		flexDirection: 'row', //? Display items horizontally within the modal
 		alignSelf: 'flex-end', //? Display items at the right end of the modal
-	},
-	//? Confirm button on modal
-	//! Could use refactoring
-	buttonOpen: {
-		backgroundColor: '#F194FF',
 	},
 	//? Modal button text
 	//! Could use refactoring
