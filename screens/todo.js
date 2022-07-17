@@ -30,9 +30,13 @@ const TodoScreen = ({ navigation, route }) => {
 	const [modalVisible, setModalVisible] = useState(false);
 	//? ID of the todo being edited, if any
 	const [todoToBeEdited, setEditTodo] = useState();
+	//? logged in data of the user
+	const user = route.params.user;
 
 	//? Processes the snapshot result of the database query for todos
-	function onSnapshotResult(QuerySnapshot) {
+	function databaseReadResult(QuerySnapshot) {
+		//? Go through every document fetched from the database and
+		//? transform it in useful data for the app
 		const databaseFetchedTodos = QuerySnapshot['_docs'].map((document) => {
 			const individualDatabaseTodo = {
 				id: document._ref._documentPath._parts[1],
@@ -44,17 +48,28 @@ const TodoScreen = ({ navigation, route }) => {
 			};
 			return individualDatabaseTodo;
 		});
+
+		//? Sort the useful data by creation date
 		const sortedByCreationTodos = databaseFetchedTodos.sort(
 			(a, b) => a.creationTime > b.creationTime
 		);
-		if (allCachedTodos.toString() != sortedByCreationTodos.toString()) {
-			setTodos(sortedByCreationTodos);
-		}
+
+		//? Update the UI with the useful data
+		setTodos(sortedByCreationTodos);
 	}
 
-	//? Displays error upon snapshot error of the database query for todos
-	function onSnapshotError(error) {
-		alert('Failed to retrieve database data: ' + error);
+	//? Helper function that will read the database for a specific user and
+	//? then update the UI accordingly
+	function performOneDatabaseRead() {
+		//? Access the database and then use "databaseReadResult()" to
+		//? modify the result into useful data for the UI
+		firestore()
+			.collection('Todos') //? Queries the 'Todos' collection
+			.where('taskOwner', '==', user) //? Retrieves documents where the taskOwner is the same person who is logged in
+			.get()
+			.then((result) => {
+				databaseReadResult(result);
+			});
 	}
 
 	const user = route.params.user;
@@ -65,10 +80,8 @@ const TodoScreen = ({ navigation, route }) => {
 			.limit(10)
 			.onSnapshot(onSnapshotResult, onSnapshotError);
 	} else {
-		firestore()
-			.collection('Todos') //? Queries the 'Todos' collection
-			.where('taskOwner', '==', user) //? Retrieves documents where the taskOwner is the same person who is logged in
-			.onSnapshot(onSnapshotResult, onSnapshotError);
+		//? If any other user is logged in, display all todos
+		performOneDatabaseRead();
 	}
 
 	//? This is the function that will get whatever text was inputted at
@@ -96,11 +109,14 @@ const TodoScreen = ({ navigation, route }) => {
 		firestore()
 			.collection('Todos')
 			.add(newTodo)
+			.then(() => {
+				//? Once document creation is finished, update UI with new data
+				performOneDatabaseRead();
+				//? And reset the input so the user doesn't have to
+				setTextInput('');
+				setDate(new Date());
+			})
 			.catch((err) => alert('failed to save this todo on the database: ' + err));
-
-		//? And reset the input so the user doesn't have to
-		setTextInput('');
-		setDate(new Date());
 	};
 
 	//? This is the function that runs once the user clicks the grey edit
@@ -117,8 +133,6 @@ const TodoScreen = ({ navigation, route }) => {
 
 	//? Sends a database request to update this todo after confirming the date
 	const databaseEditTodo = () => {
-		console.log('Editing ran');
-
 		//? Save it to the database
 		firestore()
 			.collection('Todos')
@@ -129,11 +143,12 @@ const TodoScreen = ({ navigation, route }) => {
 				targetDate: date,
 			})
 			.then(() => {
-				console.log('Updated database');
 				//? And reset the input so the user doesn't have to
 				setTextInput('');
 				setDate(new Date());
 				setEditTodo();
+				//? Then update UI accordingly
+				performOneDatabaseRead();
 			});
 	};
 
@@ -150,6 +165,7 @@ const TodoScreen = ({ navigation, route }) => {
 				allCachedTodos.forEach((todo) => {
 					firestore().collection('Todos').doc(todo.id).delete();
 				});
+				performOneDatabaseRead();
 			};
 
 			//? Prompt the user for confirmation regarding deleting all of their todos
@@ -171,16 +187,23 @@ const TodoScreen = ({ navigation, route }) => {
 			.then(() => {
 				//? Alert the user upon completion
 				alert('Todo deleted!');
+				//? Update UI accordingly
+				performOneDatabaseRead();
 			})
 			.catch((error) => alert('Error deleting this todo: ' + error));
 	};
 
 	//? Update the status of this TODO. True will become false and vice versa
 	const changeTodoStatus = (status, completingTodoId) => {
-		firestore().collection('Todos').doc(completingTodoId).update({
-			completionStatus: status,
-			editedAt: new Date(),
-		});
+		//? Update completion status for this todo, then update UI
+		firestore()
+			.collection('Todos')
+			.doc(completingTodoId)
+			.update({
+				completionStatus: status,
+				editedAt: new Date(),
+			})
+			.then(() => performOneDatabaseRead());
 	};
 
 	//? This is the component that will be rendered for every index within the allCachedTodos
