@@ -320,9 +320,23 @@ const TodoScreen = ({ navigation, route }) => {
 						<View style={styles.buttonsRow}>
 							<TouchableOpacity
 								style={styles.button}
-								onPress={() => setModalVisible(!modalVisible)}
+								onPress={() => {
+									//? Close the box
+									setModalVisible(!modalVisible);
+
+									//? If the user was updating a todo,
+									//? closing a modal will cancel the update
+									if (todoToBeEdited != undefined) {
+										todoToBeEdited = undefined;
+										setDate(new Date());
+										setTextInput('');
+									}
+								}}
 							>
-								<Text style={styles.listItemText}>Close</Text>
+								<Text style={styles.listItemText}>
+									{/* //? Display different text if the user is editing a todo or not */}
+									{todoToBeEdited == undefined ? 'Close' : 'Cancel update'}
+								</Text>
 							</TouchableOpacity>
 							<TouchableOpacity
 								style={[
