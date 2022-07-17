@@ -28,6 +28,8 @@ const TodoScreen = ({ navigation, route }) => {
 	const [date, setDate] = useState(new Date());
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
+	//? ID of the todo being edited, if any
+	const [todoToBeEdited, setEditTodo] = useState();
 
 	//? Processes the snapshot result of the database query for todos
 	function onSnapshotResult(QuerySnapshot) {
@@ -99,6 +101,40 @@ const TodoScreen = ({ navigation, route }) => {
 		//? And reset the input so the user doesn't have to
 		setTextInput('');
 		setDate(new Date());
+	};
+
+	//? This is the function that runs once the user clicks the grey edit
+	//? button on any todo item
+	const clickEditTodo = (editingTodo) => {
+		//? Sets the text as same saved
+		setTextInput(editingTodo.taskDescription);
+		//? Uses old target date in case the user wants to reuse it
+		setDate(new Date(editingTodo.targetDate * 1000));
+		//? Sets this variable to the todo object so when the user confirms
+		//? the date, it updates the old todo instead of creating a new one
+		setEditTodo(editingTodo);
+	};
+
+	//? Sends a database request to update this todo after confirming the date
+	const databaseEditTodo = () => {
+		console.log('Editing ran');
+
+		//? Save it to the database
+		firestore()
+			.collection('Todos')
+			.doc(todoToBeEdited.id)
+			.update({
+				taskDescription: textInput,
+				editedAt: new Date(),
+				targetDate: date,
+			})
+			.then(() => {
+				console.log('Updated database');
+				//? And reset the input so the user doesn't have to
+				setTextInput('');
+				setDate(new Date());
+				setEditTodo();
+			});
 	};
 
 	//? This function will delete one or all todos from the list, depending
@@ -214,7 +250,7 @@ const TodoScreen = ({ navigation, route }) => {
 									name="edit"
 									size={20}
 									color={COLORS.white}
-									onPress={() => editTodo(oneOfTheTodos?.id)}
+									onPress={() => clickEditTodo(oneOfTheTodos)}
 								></ICON>
 							</TouchableOpacity>
 						</View>
@@ -271,7 +307,11 @@ const TodoScreen = ({ navigation, route }) => {
 									{ backgroundColor: COLORS.primary, marginLeft: 10 },
 								]}
 								onPress={() => {
-									addTodo();
+									if (todoToBeEdited == undefined) {
+										addTodo();
+									} else {
+										databaseEditTodo();
+									}
 									setModalVisible(!modalVisible);
 								}}
 							>
