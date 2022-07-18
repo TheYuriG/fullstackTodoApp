@@ -11,13 +11,11 @@ import {
 	FlatList,
 	Alert,
 } from 'react-native';
+import { COLORS } from '../colors/colors.js';
 import DatePicker from 'react-native-date-picker'; //? Documentation: https://github.com/henninghall/react-native-date-picker
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
-
-//? Colors theme
-const COLORS = { primary: '#800080', white: '#ffffff', grey: '#dddddd', coral: 'coral' };
 
 const TodoScreen = ({ navigation, route }) => {
 	//? Tracks the text input at the footer
@@ -299,10 +297,10 @@ const TodoScreen = ({ navigation, route }) => {
 					//? (3) If both of the previous checks failed, it means that the
 					//? task isn't completed yet and it ran out of time, so paint it red
 					backgroundColor: oneOfTheTodos?.completionStatus
-						? '#90ee90'
+						? COLORS.taskComplete
 						: oneOfTheTodos?.targetDate < new Date() / 1000
-						? '#eeaaaa'
-						: COLORS.grey,
+						? COLORS.taskDue
+						: COLORS.white,
 				},
 			]}
 		>
@@ -313,12 +311,12 @@ const TodoScreen = ({ navigation, route }) => {
 						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
 						unfillColor={
 							oneOfTheTodos?.completionStatus
-								? '#90ee90'
+								? COLORS.taskComplete
 								: oneOfTheTodos?.targetDate < new Date() / 1000
-								? '#eeaaaa'
-								: COLORS.grey
+								? COLORS.taskDue
+								: COLORS.white
 						} //? Inner color of the checkbox
-						fillColor="green" //? Outer color (radius) of the checkbox
+						fillColor={COLORS.checkBox} //? Outer color (radius) of the checkbox
 						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
 						size={35} //? Size of the checkbox
 						iconStyle={{
@@ -334,6 +332,7 @@ const TodoScreen = ({ navigation, route }) => {
 							textDecorationLine: oneOfTheTodos?.completionStatus
 								? 'line-through'
 								: 'none',
+							flex: 1,
 						},
 					]}
 				>
@@ -347,7 +346,7 @@ const TodoScreen = ({ navigation, route }) => {
 					{!oneOfTheTodos?.completionStatus && (
 						<View marginRight={5}>
 							<TouchableOpacity
-								style={[styles.deleteBox, { backgroundColor: 'grey' }]}
+								style={[styles.actionBox, { backgroundColor: COLORS.grey }]}
 							>
 								<ICON
 									name="edit"
@@ -359,7 +358,7 @@ const TodoScreen = ({ navigation, route }) => {
 						</View>
 					)}
 					{/* //? Delete button */}
-					<TouchableOpacity style={[styles.deleteBox]}>
+					<TouchableOpacity style={[styles.actionBox]}>
 						<ICON
 							name="delete"
 							size={20}
@@ -378,7 +377,7 @@ const TodoScreen = ({ navigation, route }) => {
 			<View style={styles.header}>
 				<Text style={styles.headerText}>To-Do List</Text>
 				{/* //? The UI will only render the DELETE ALL button on the header
-            //? if there is even anything to be deleted in the first place */}
+            		//? if there is even anything to be deleted in the first place */}
 				{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
 					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
 				)}
@@ -441,7 +440,7 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? Section for the TODO list */}
 			<FlatList
 				showVerticalScrollIndicator={false}
-				style={{ backgroundColor: COLORS.coral }}
+				style={{ backgroundColor: COLORS.tertiary }}
 				contentContainerStyle={{ padding: 5, paddingRight: 10, paddingBottom: 65 }}
 				data={displayedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
@@ -449,7 +448,7 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? Admin mode pagination */}
 			{user == 'admin@domain.com' && (
 				<View
-					backgroundColor={COLORS.coral}
+					backgroundColor={COLORS.tertiary}
 					flexDirection="row"
 					justifyContent="space-around"
 					paddingBottom={20}
@@ -459,20 +458,15 @@ const TodoScreen = ({ navigation, route }) => {
 						<TouchableOpacity
 							style={[
 								styles.button,
-								{ backgroundColor: COLORS.white, marginRight: 10 },
+								{ backgroundColor: COLORS.white, elevation: 10 },
 							]}
 							onPress={() => {
 								adminPagination(page - 1);
 								setPage((page) => page - 1);
 							}}
 						>
-							<View flexDirection="row" alignItems="center" width={85}>
-								<ICON
-									name="chevron-left"
-									color={COLORS.primary}
-									size={20}
-									paddingLeft={10}
-								/>
+							<View flexDirection="row" padding={3}>
+								<ICON name="chevron-left" color={COLORS.primary} size={20} />
 								<Text style={styles.listItemText}>Previous</Text>
 							</View>
 						</TouchableOpacity>
@@ -481,13 +475,16 @@ const TodoScreen = ({ navigation, route }) => {
 					//? as many items as the limit per page inside the pagination function */}
 					{nextEnabled && (
 						<TouchableOpacity
-							style={[styles.button, { backgroundColor: COLORS.white }]}
+							style={[
+								styles.button,
+								{ backgroundColor: COLORS.white, elevation: 10 },
+							]}
 							onPress={() => {
 								adminPagination(page + 1);
 								setPage((page) => page + 1);
 							}}
 						>
-							<View flexDirection="row" alignItems="center" width={55}>
+							<View flexDirection="row" padding={3}>
 								<Text style={styles.listItemText}>Next</Text>
 								<ICON name="chevron-right" color={COLORS.primary} size={20} />
 							</View>
@@ -532,13 +529,14 @@ const styles = StyleSheet.create({
 		flexDirection: 'row', //? How the items should be align (Row = horizontal)
 		alignItems: 'center', //? Align items vertically on the axis
 		justifyContent: 'space-between', //? Put space between the items, but not around them
-		backgroundColor: 'pink',
+		backgroundColor: COLORS.secondary,
+		elevation: 10,
 	},
 	//? Inner text of the title of our app
 	headerText: {
 		fontSize: 20, //? Big
 		fontWeight: 'bold', //? Strong
-		color: COLORS.primary, //? Eyes flaming gold
+		color: COLORS.white, //? Eyes flaming gold
 	},
 	//? Styling for each individual box of our todo list
 	listItem: {
@@ -548,13 +546,14 @@ const styles = StyleSheet.create({
 		marginVertical: 5, //? Outer vertical spacing to separate our container from the other containers or device edges
 		marginLeft: 5, //? Outer left spacing to separate our container from the other containers or device edges
 		borderRadius: 20, //? Rounds the edges of the list Item box
+		borderColor: COLORS.secondary, //? Border color for the list items
+		borderWidth: 3, //? How thick the list item border is
 	},
 	//? Text inside a todo item
 	listItemText: {
-		flex: 1,
 		fontSize: 15, //? Not that big
 		fontWeight: 'bold', //? Strong
-		color: COLORS.primary, //? Contrasting purple
+		color: COLORS.secondary, //? Contrasting purple
 		//? If the "todo" has "completionStatus" equal to "true",
 		//? line-through the text. Do nothing otherwise
 		textAlignVertical: 'center', //? Center the text vertically
@@ -567,10 +566,10 @@ const styles = StyleSheet.create({
 		paddingRight: 10, //? Spacing between the delete icon and the edge of the list item
 	},
 	//? The red/grey box that holds the editing/deletion icon
-	deleteBox: {
+	actionBox: {
 		height: 28, //? Determines how much height this will have
 		width: 25, //? Determines how much width this will have
-		backgroundColor: 'red', //? Defines the icon delete box to have a red background. The edit icon overrides this with grey
+		backgroundColor: COLORS.danger, //? Defines the icon delete box to have a red background. The edit icon overrides this with grey
 		justifyContent: 'center', //? Vertically aligns the icon within the box
 		alignItems: 'center', //? Horizontally aligns the icon within the box
 		borderRadius: 5, //? Rounds the edges of the icon box
@@ -610,7 +609,7 @@ const styles = StyleSheet.create({
 	//? The Date/Time box
 	modalView: {
 		margin: 20,
-		backgroundColor: 'white',
+		backgroundColor: COLORS.white,
 		borderRadius: 20,
 		padding: 35,
 		alignItems: 'center',
@@ -651,7 +650,7 @@ const styles = StyleSheet.create({
 	//? Modal button text
 	//! Could use refactoring
 	textStyle: {
-		color: 'white',
+		color: COLORS.white,
 		fontWeight: 'bold',
 		textAlign: 'center',
 	},
