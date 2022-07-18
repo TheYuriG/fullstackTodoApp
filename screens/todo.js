@@ -30,10 +30,21 @@ const TodoScreen = ({ navigation, route }) => {
 	const [date, setDate] = useState(new Date());
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
+	//? Pagination system
+	const [lastDocument, setLastDocument] = useState();
 	//? ID of the todo being edited, if any
 	const [todoToBeEdited, setEditTodo] = useState();
-	//? logged in data of the user
+	//? Page the user is currently viewing
+	const [page, setPage] = useState(1);
+	//? Disable the next button if you have not fetched the limit of items per page
+	const [nextEnabled, setEnableNextButton] = useState(true);
+	//? Email of the logged user
 	const user = route.params.user;
+	//? Define a subjective limit of items per page. The number itself
+	//? doesn't matter, we just need to have one number, any number, defined
+	//! The lower the number, the more pages we need to load and
+	//! network requests we need to make. We want to be efficient
+	const limitPerPage = 10;
 
 	//? Processes the snapshot result of the database query for todos
 	function databaseReadResult(databaseData) {
@@ -58,6 +69,21 @@ const TodoScreen = ({ navigation, route }) => {
 
 		//? Update the UI with the useful data
 		setTodos(sortedByCreationTodos);
+
+		if (user == 'admin@domain.com') {
+			//? We store the last document for the admin pagination system
+			if (databaseData['_docs'].length > 0) {
+				setLastDocument(databaseData['_docs'][databaseData['_docs'].length - 1]);
+				setAllTodos([...allTodos, ...sortedByCreationTodos]);
+			}
+
+			//? If the database request fetched less than the limit of items
+			//? per page, then we should disable the "NEXT" button as we have
+			//? reached the limit of documents
+			if (databaseFetchedTodos.length < limitPerPage) {
+				setEnableNextButton(false);
+			}
+		}
 	}
 
 	//? Helper function that will read the database for a specific user and
@@ -74,20 +100,64 @@ const TodoScreen = ({ navigation, route }) => {
 			});
 	}
 
-	//?
+	//? Handles pagination for admin mode
+	function adminPagination(page) {
+		//? Check if the cached todos array is bigger than the sequence
+		//? of requested items. If yes, the user is requesting to view
+		//? items that are not cached in memory and therefore we will now
+		//? fetch said items
+		if (allTodos.length == 0) {
+			//? Making first request when loading in admin mode
+			firestore()
+				.collection('Todos') //? Queries the 'Todos' collection
+				.limit(limitPerPage) //? Limit items per request
+				.get()
+				.then((result) => {
+					databaseReadResult(result);
+				});
+		} else if (allTodos.length <= (page - 1) * limitPerPage) {
+			//? Add the displayed todos to the admin cache
+			setAllTodos([...allTodos, ...displayedTodos]);
 
+			//? Requesting additional database documents if the next page
+			//? of todos wasn't cached in memory yet
+			firestore()
+				.collection('Todos') //? Queries the 'Todos' collection
+				.limit(limitPerPage) //? Limit items per request
+				.startAfter(lastDocument)
+				.get()
+				.then((result) => {
+					databaseReadResult(result);
+				});
+		} else {
+			//? If the user is requesting to see items we have already cached,
+			//? we load those from the cached array and display them
+			const nowDisplayingTodos = allTodos.slice(
+				(page - 1) * limitPerPage, //? Starting point (inclusive)
+				page * limitPerPage //? Ending point (not inclusive)
+			);
+			setTodos(nowDisplayingTodos);
+
+			//? If the retrieved data from a database request is less items than
+			//? the limit per page, then you assume to have reached the end of
+			//? the database and disable the "NEXT" pagination button
+			//! Sadly firebase doesn't offer an easy way to check the size
+			//! of a collection (like MongoDB's countDocuments()'s function)
+			//! so this 'hack' is what we gotta settle for, at the moment
+			if (allTodos.length >= page * limitPerPage) {
+				setEnableNextButton(true);
+			} else {
+				setEnableNextButton(false);
+			}
+		}
+	}
+
+	//? Loads app data from database upon mount
 	useEffect(() => {
 		//? Checks who is accessing the app and provides the UI accordingly
 		if (user == 'admin@domain.com') {
 			//? If the admin is logged in, display todos in pagination mode
-			firestore()
-				.collection('Todos') //? Queries the 'Todos' collection
-				.limit(10) //? Limit to 10 items per request
-				.get()
-				.then((result) => {
-					databaseReadResult(result);
-					setLastDocument(result.pop());
-				});
+			adminPagination(page);
 		} else {
 			//? If any other user is logged in, display all todos
 			performOneDatabaseRead();
@@ -393,7 +463,7 @@ const TodoScreen = ({ navigation, route }) => {
 							]}
 							onPress={() => {
 								adminPagination(page - 1);
-								setPage(page - 1);
+								setPage((page) => page - 1);
 							}}
 						>
 							<View flexDirection="row" alignItems="center" width={85}>
@@ -409,12 +479,12 @@ const TodoScreen = ({ navigation, route }) => {
 					)}
 					{/* //? The "next" button only renders if the current loaded page has
 					//? as many items as the limit per page inside the pagination function */}
-					{!nextDisabled && (
+					{nextEnabled && (
 						<TouchableOpacity
 							style={[styles.button, { backgroundColor: COLORS.white }]}
 							onPress={() => {
 								adminPagination(page + 1);
-								setPage(page + 1);
+								setPage((page) => page + 1);
 							}}
 						>
 							<View flexDirection="row" alignItems="center" width={55}>
