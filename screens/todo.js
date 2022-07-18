@@ -335,7 +335,7 @@ const TodoScreen = ({ navigation, route }) => {
 									//? If the user was updating a todo,
 									//? closing a modal will cancel the update
 									if (todoToBeEdited != undefined) {
-										todoToBeEdited = undefined;
+										setEditTodo(undefined);
 										setDate(new Date());
 										setTextInput('');
 									}
@@ -384,10 +384,14 @@ const TodoScreen = ({ navigation, route }) => {
 						onChangeText={(text) => setTextInput(text)}
 					></TextInput>
 				</View>
-				{/* //? Footer's "Add" button */}
+				{/* //? Footer's "Add" button if new, "Edit" button if old */}
 				<TouchableOpacity onPress={() => setModalVisible(true)}>
 					<View style={styles.iconContainer}>
-						<ICON name="add" color={COLORS.white} size={30} />
+						<ICON
+							name={todoToBeEdited != undefined ? 'edit' : 'add'}
+							color={COLORS.white}
+							size={30}
+						/>
 					</View>
 				</TouchableOpacity>
 			</View>
