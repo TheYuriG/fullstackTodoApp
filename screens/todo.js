@@ -1,5 +1,5 @@
 //? Dependencies
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
 	SafeAreaView,
 	StyleSheet,
@@ -34,10 +34,10 @@ const TodoScreen = ({ navigation, route }) => {
 	const user = route.params.user;
 
 	//? Processes the snapshot result of the database query for todos
-	function databaseReadResult(QuerySnapshot) {
+	function databaseReadResult(databaseData) {
 		//? Go through every document fetched from the database and
 		//? transform it in useful data for the app
-		const databaseFetchedTodos = QuerySnapshot['_docs'].map((document) => {
+		const databaseFetchedTodos = databaseData['_docs'].map((document) => {
 			const individualDatabaseTodo = {
 				id: document._ref._documentPath._parts[1],
 				taskDescription: document._data.taskDescription,
@@ -72,17 +72,25 @@ const TodoScreen = ({ navigation, route }) => {
 			});
 	}
 
-	const user = route.params.user;
+	//?
 
-	if (user == 'admin@domain.com') {
-		firestore()
-			.collection('Todos') //? Queries the 'Todos' collection
-			.limit(10)
-			.onSnapshot(onSnapshotResult, onSnapshotError);
-	} else {
-		//? If any other user is logged in, display all todos
-		performOneDatabaseRead();
-	}
+	useEffect(() => {
+		//? Checks who is accessing the app and provides the UI accordingly
+		if (user == 'admin@domain.com') {
+			//? If the admin is logged in, display todos in pagination mode
+			firestore()
+				.collection('Todos') //? Queries the 'Todos' collection
+				.limit(10) //? Limit to 10 items per request
+				.get()
+				.then((result) => {
+					databaseReadResult(result);
+					setLastDocument(result.pop());
+				});
+		} else {
+			//? If any other user is logged in, display all todos
+			performOneDatabaseRead();
+		}
+	}, []);
 
 	//? This is the function that will get whatever text was inputted at
 	//? the bottom and add it to "allCachedTodos"
