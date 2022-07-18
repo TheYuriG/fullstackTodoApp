@@ -17,13 +17,15 @@ import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: h
 import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
 
 //? Colors theme
-const COLORS = { primary: '#800080', white: '#ffffff', grey: '#dddddd' };
+const COLORS = { primary: '#800080', white: '#ffffff', grey: '#dddddd', coral: 'coral' };
 
 const TodoScreen = ({ navigation, route }) => {
 	//? Tracks the text input at the footer
 	const [textInput, setTextInput] = useState('');
 	//? Tracks the TODO list in the app body
-	const [allCachedTodos, setTodos] = useState([]);
+	const [displayedTodos, setTodos] = useState([]);
+	//? Tracks ALL the TODOs (only relevant in admin mode)
+	const [allTodos, setAllTodos] = useState([]);
 	//? Tracks the TODO time limit
 	const [date, setDate] = useState(new Date());
 	//? Manages the opening and closing of the date picker
@@ -93,7 +95,7 @@ const TodoScreen = ({ navigation, route }) => {
 	}, []);
 
 	//? This is the function that will get whatever text was inputted at
-	//? the bottom and add it to "allCachedTodos"
+	//? the bottom and add it to "displayedTodos"
 	const addTodo = () => {
 		//? Check if the textInput is empty when the user clicks the button
 		//? to add a new Todo. This should never run because we don't display
@@ -170,7 +172,7 @@ const TodoScreen = ({ navigation, route }) => {
 			//? Function to iterate through this user's local todos and
 			//? send an individual deletion for each of them
 			const deleteAllTodos = () => {
-				allCachedTodos.forEach((todo) => {
+				displayedTodos.forEach((todo) => {
 					firestore().collection('Todos').doc(todo.id).delete();
 				});
 				performOneDatabaseRead();
@@ -214,7 +216,7 @@ const TodoScreen = ({ navigation, route }) => {
 			.then(() => performOneDatabaseRead());
 	};
 
-	//? This is the component that will be rendered for every index within the allCachedTodos
+	//? This is the component that will be rendered for every index within the displayedTodos
 	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
 		<View
 			style={[
@@ -307,7 +309,7 @@ const TodoScreen = ({ navigation, route }) => {
 				<Text style={styles.headerText}>To-Do List</Text>
 				{/* //? The UI will only render the DELETE ALL button on the header
             //? if there is even anything to be deleted in the first place */}
-				{allCachedTodos.length > 0 && user !== 'admin@domain.com' && (
+				{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
 					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
 				)}
 			</View>
@@ -369,32 +371,84 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? Section for the TODO list */}
 			<FlatList
 				showVerticalScrollIndicator={false}
-				style={{ backgroundColor: 'coral' }}
+				style={{ backgroundColor: COLORS.coral }}
 				contentContainerStyle={{ padding: 5, paddingRight: 10, paddingBottom: 65 }}
-				data={allCachedTodos}
+				data={displayedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
 			/>
-			{/* //? Section for the footer where we can add new items to the list */}
-			<View style={styles.footer}>
-				{/* //? Footer's input data section */}
-				<View style={styles.inputContainer}>
-					<TextInput
-						placeholder="Add new todo..."
-						value={textInput}
-						onChangeText={(text) => setTextInput(text)}
-					></TextInput>
+			{/* //? Admin mode pagination */}
+			{user == 'admin@domain.com' && (
+				<View
+					backgroundColor={COLORS.coral}
+					flexDirection="row"
+					justifyContent="space-around"
+					paddingBottom={20}
+				>
+					{/* //? The "previous" button only renders if not on page 1 */}
+					{page != 1 && (
+						<TouchableOpacity
+							style={[
+								styles.button,
+								{ backgroundColor: COLORS.white, marginRight: 10 },
+							]}
+							onPress={() => {
+								adminPagination(page - 1);
+								setPage(page - 1);
+							}}
+						>
+							<View flexDirection="row" alignItems="center" width={85}>
+								<ICON
+									name="chevron-left"
+									color={COLORS.primary}
+									size={20}
+									paddingLeft={10}
+								/>
+								<Text style={styles.listItemText}>Previous</Text>
+							</View>
+						</TouchableOpacity>
+					)}
+					{/* //? The "next" button only renders if the current loaded page has
+					//? as many items as the limit per page inside the pagination function */}
+					{!nextDisabled && (
+						<TouchableOpacity
+							style={[styles.button, { backgroundColor: COLORS.white }]}
+							onPress={() => {
+								adminPagination(page + 1);
+								setPage(page + 1);
+							}}
+						>
+							<View flexDirection="row" alignItems="center" width={55}>
+								<Text style={styles.listItemText}>Next</Text>
+								<ICON name="chevron-right" color={COLORS.primary} size={20} />
+							</View>
+						</TouchableOpacity>
+					)}
 				</View>
-				{/* //? Footer's "Add" button if new, "Edit" button if old */}
-				<TouchableOpacity onPress={() => setModalVisible(true)}>
-					<View style={styles.iconContainer}>
-						<ICON
-							name={todoToBeEdited != undefined ? 'edit' : 'add'}
-							color={COLORS.white}
-							size={30}
-						/>
+			)}
+			{/* //? Section for the footer where users can add new items to
+			//? the list. This will not display in admin mode */}
+			{user != 'admin@domain.com' && (
+				<View style={styles.footer}>
+					{/* //? Footer's input data section */}
+					<View style={styles.inputContainer}>
+						<TextInput
+							placeholder="Add new todo..."
+							value={textInput}
+							onChangeText={(text) => setTextInput(text)}
+						></TextInput>
 					</View>
-				</TouchableOpacity>
-			</View>
+					{/* //? Footer's "Add" button if new, "Edit" button if old */}
+					<TouchableOpacity onPress={() => setModalVisible(true)}>
+						<View style={styles.iconContainer}>
+							<ICON
+								name={todoToBeEdited != undefined ? 'edit' : 'add'}
+								color={COLORS.white}
+								size={30}
+							/>
+						</View>
+					</TouchableOpacity>
+				</View>
+			)}
 		</SafeAreaView>
 	);
 };
