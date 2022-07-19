@@ -1,8 +1,16 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
-import React, { useState, setInput } from 'react';
-import { KeyboardAvoidingView, TextInput, TouchableOpacity } from 'react-native';
+import {
+	Alert,
+	StyleSheet,
+	Text,
+	View,
+	KeyboardAvoidingView,
+	TextInput,
+	TouchableOpacity,
+} from 'react-native';
+import React, { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; //? Documentation: https://react-native-async-storage.github.io/async-storage/docs/usage/
 import { COLORS } from '../colors/colors.js';
+import auth from '@react-native-firebase/auth';
 
 const LoginScreen = ({ navigation }) => {
 	//? Handles email data
@@ -37,16 +45,21 @@ const LoginScreen = ({ navigation }) => {
 	//? cached in "input"
 	const login = (email, password) => {
 		//? Check if the email and password provide a good match in the database
-		if (input?.[email] == password) {
-			//? If successful, navigate to the next screen while providing
-			//? the email as navigation parameters
-			navigation.navigate('todo', { user: email });
-		} else {
-			//? If the email isn't present or the password doesn't match,
-			//? inform the user of login failure
-			Alert.alert('Failed to login', 'Invalid credentials');
-			setPassword('');
-		}
+		auth()
+			.signInWithEmailAndPassword(email, password)
+			.then(() => {
+				//? If successful, navigate to the next screen while providing
+				//? the email as navigation parameters
+				console.log('User signed in!');
+				// navigation.navigate('todo', { user: email });
+			})
+			.catch((error) => {
+				//? If the email isn't present or the password doesn't match,
+				//? inform the user of login failure
+				Alert.alert('Failed to login', 'Invalid credentials');
+				setPassword('');
+				console.error(error);
+			});
 	};
 
 	//? Creates a new login entry on local storage
@@ -58,26 +71,35 @@ const LoginScreen = ({ navigation }) => {
 			setPasswordConfirmation('');
 			return;
 		}
-		//? Check if the database already has an entry for this email
-		else if (input[email] != undefined) {
-			Alert.alert('Failed to register', 'This email was already used!');
-			setEmail('');
-			setPassword('');
-			setPasswordConfirmation('');
-			return;
-		}
-		//? If neither of the previous checks failed, create the user and
-		//? save it to the database
-		input[email] = password;
-		setInput(input);
-		try {
-			await AsyncStorage.setItem('logins', JSON.stringify(input));
-		} catch (e) {
-			return alert('Failed to save the data to the storage');
-		}
-		//? After a successful user creation, move to the next page
-		//? while providing this user as parameters to the navigator
-		navigation.navigate('todo', { user: email });
+		auth()
+			.createUserWithEmailAndPassword(email, password)
+			.then(() => {
+				//? If the passwords match and the authentication didn't return
+				//? a Promise.reject(), login the user and go forward
+				console.log('User account created & signed in!');
+				//? After a successful user creation, move to the next page
+				//? while providing this user as parameters to the navigator
+				// navigation.navigate('todo', { user: email });
+			})
+			.catch((error) => {
+				if (error.code === 'auth/email-already-in-use') {
+					Alert.alert('Failed to register', 'This email was already used!');
+					setEmail('');
+					setPassword('');
+					setPasswordConfirmation('');
+				} else if (error.code === 'auth/invalid-email') {
+					console.log('That email address is invalid!');
+					Alert.alert('Failed to register', 'This email is invalid!');
+					setEmail('');
+					setPassword('');
+					setPasswordConfirmation('');
+				} else if (error.code === 'auth/weak-password') {
+					console.log('The password needs to be 6 characters or longer!');
+					Alert.alert('Failed to register', "Password isn't long enough!");
+				} else {
+					console.error(error);
+				}
+			});
 	};
 
 	//? Check if the data wasn't loaded on memory yet and force a load
