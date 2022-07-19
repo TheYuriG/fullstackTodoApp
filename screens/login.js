@@ -7,8 +7,7 @@ import {
 	TextInput,
 	TouchableOpacity,
 } from 'react-native';
-import React, { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; //? Documentation: https://react-native-async-storage.github.io/async-storage/docs/usage/
+import React, { useState, useEffect } from 'react';
 import { COLORS } from '../colors/colors.js';
 import auth from '@react-native-firebase/auth';
 
@@ -21,25 +20,21 @@ const LoginScreen = ({ navigation }) => {
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	//? Handles if the user is trying to register
 	const [isRegistering, setIsRegistering] = useState(false);
-	//? Checks if the login data object was loaded on memory
-	const [dataLoaded, setLoad] = useState(false);
-	//? This holds default values for the local database
-	const [input, setInput] = useState({ 'admin@domain.com': 'adminpassword' });
 
-	//? Prompts to read the data from AsyncStorage
-	const readData = async () => {
-		try {
-			//? Loads asynchronously from storage
-			const value = await AsyncStorage.getItem('logins');
-			if (value !== null) {
-				//? Parse data as object
-				setInput(JSON.parse(value));
-			}
-		} catch (e) {
-			//? Alert user if fails
-			alert('Failed to fetch the login data from storage');
+	//? Handle user state changes (login, logoff)
+	function onAuthStateChanged(user) {
+		if (user) {
+			//? If the user is logged in (user is valid), pass their email as
+			//? route.params.user to the todo page so their TODOs will fetch
+			navigation.navigate('todo', { user: user?.email });
 		}
-	};
+	}
+
+	//? When the app starts, check for authentication once
+	useEffect(() => {
+		const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+		return subscriber; //? unsubscribe on unmount
+	}, []);
 
 	//? Compares the email/password input from user to database entries
 	//? cached in "input"
@@ -50,8 +45,6 @@ const LoginScreen = ({ navigation }) => {
 			.then(() => {
 				//? If successful, navigate to the next screen while providing
 				//? the email as navigation parameters
-				console.log('User signed in!');
-				// navigation.navigate('todo', { user: email });
 			})
 			.catch((error) => {
 				//? If the email isn't present or the password doesn't match,
@@ -75,11 +68,8 @@ const LoginScreen = ({ navigation }) => {
 			.createUserWithEmailAndPassword(email, password)
 			.then(() => {
 				//? If the passwords match and the authentication didn't return
-				//? a Promise.reject(), login the user and go forward
-				console.log('User account created & signed in!');
-				//? After a successful user creation, move to the next page
-				//? while providing this user as parameters to the navigator
-				// navigation.navigate('todo', { user: email });
+				//? a Promise.reject(), the user will be logged in and "onAuthStateChanged()"
+				//? will fire and navigate to the next screen
 			})
 			.catch((error) => {
 				if (error.code === 'auth/email-already-in-use') {
@@ -88,27 +78,17 @@ const LoginScreen = ({ navigation }) => {
 					setPassword('');
 					setPasswordConfirmation('');
 				} else if (error.code === 'auth/invalid-email') {
-					console.log('That email address is invalid!');
 					Alert.alert('Failed to register', 'This email is invalid!');
 					setEmail('');
 					setPassword('');
 					setPasswordConfirmation('');
 				} else if (error.code === 'auth/weak-password') {
-					console.log('The password needs to be 6 characters or longer!');
 					Alert.alert('Failed to register', "Password isn't long enough!");
 				} else {
 					console.error(error);
 				}
 			});
 	};
-
-	//? Check if the data wasn't loaded on memory yet and force a load
-	if (!dataLoaded) {
-		readData();
-		//? Set "dataLoaded" as true to avoid an infinite data load loop
-		//? by running this if check infinite times
-		setLoad(true);
-	}
 
 	return (
 		//? We use a "KeyboardAvoidingView" so the fields won't be obscured by the keyboard

@@ -16,7 +16,7 @@ import DatePicker from 'react-native-date-picker'; //? Documentation: https://gi
 import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: https://github.com/WrathChaos/react-native-bouncy-checkbox
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
-
+import auth from '@react-native-firebase/auth'; //? Documentation: https://rnfirebase.io/auth/usage
 const TodoScreen = ({ navigation, route }) => {
 	//? Tracks the text input at the footer
 	const [textInput, setTextInput] = useState('');
@@ -36,7 +36,7 @@ const TodoScreen = ({ navigation, route }) => {
 	const [page, setPage] = useState(1);
 	//? Disable the next button if you have not fetched the limit of items per page
 	const [nextEnabled, setEnableNextButton] = useState(true);
-	//? Email of the logged user
+	//? Email of the logged user, passed as parameters when navigating to "todo"
 	const user = route.params.user;
 	//? Define a subjective limit of items per page. The number itself
 	//? doesn't matter, we just need to have one number, any number, defined
@@ -53,9 +53,9 @@ const TodoScreen = ({ navigation, route }) => {
 				id: document._ref._documentPath._parts[1],
 				taskDescription: document._data.taskDescription,
 				completionStatus: document._data.completionStatus,
-				editedAt: document._data.editedAt.seconds,
-				creationTime: document._data.creationTime.seconds,
-				targetDate: document._data.targetDate.seconds,
+				editedAt: document._data.editedAt,
+				creationTime: document._data.creationTime,
+				targetDate: document._data.targetDate,
 			};
 			return individualDatabaseTodo;
 		});
@@ -70,8 +70,9 @@ const TodoScreen = ({ navigation, route }) => {
 
 		if (user == 'admin@domain.com') {
 			//? We store the last document for the admin pagination system
-			if (databaseData['_docs'].length > 0) {
-				setLastDocument(databaseData['_docs'][databaseData['_docs'].length - 1]);
+			const numOfDocsFetched = databaseData['_docs'].length;
+			if (numOfDocsFetched > 0) {
+				setLastDocument(databaseData['_docs'][numOfDocsFetched - 1]);
 				setAllTodos([...allTodos, ...sortedByCreationTodos]);
 			}
 
@@ -177,9 +178,9 @@ const TodoScreen = ({ navigation, route }) => {
 		const newTodo = {
 			taskDescription: textInput,
 			completionStatus: false,
-			creationTime: new Date(),
-			editedAt: new Date(),
-			targetDate: date,
+			creationTime: new Date().getTime(),
+			editedAt: new Date().getTime(),
+			targetDate: date.getTime(),
 			taskOwner: route.params.user,
 		};
 
@@ -298,7 +299,7 @@ const TodoScreen = ({ navigation, route }) => {
 					//? task isn't completed yet and it ran out of time, so paint it red
 					backgroundColor: oneOfTheTodos?.completionStatus
 						? COLORS.taskComplete
-						: oneOfTheTodos?.targetDate < new Date() / 1000
+						: oneOfTheTodos?.targetDate < new Date().getTime()
 						? COLORS.taskDue
 						: COLORS.white,
 				},
@@ -312,7 +313,7 @@ const TodoScreen = ({ navigation, route }) => {
 						unfillColor={
 							oneOfTheTodos?.completionStatus
 								? COLORS.taskComplete
-								: oneOfTheTodos?.targetDate < new Date() / 1000
+								: oneOfTheTodos?.targetDate < new Date().getTime()
 								? COLORS.taskDue
 								: COLORS.white
 						} //? Inner color of the checkbox
@@ -376,11 +377,31 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? Section for the header, that has the bold title for our application */}
 			<View style={styles.header}>
 				<Text style={styles.headerText}>To-Do List</Text>
-				{/* //? The UI will only render the DELETE ALL button on the header
+				<View flexDirection="row">
+					<ICON
+						name="logout"
+						size={25}
+						color={COLORS.white}
+						onPress={() => {
+							auth()
+								.signOut()
+								.then(() => {
+									//? Once the user logs out, return to the login screen
+									navigation.popToTop();
+								});
+						}}
+					/>
+					{/* //? The UI will only render the DELETE ALL button on the header
             		//? if there is even anything to be deleted in the first place */}
-				{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
-					<ICON name="delete" size={25} color="red" onPress={() => deleteTodo('0000')} />
-				)}
+					{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
+						<ICON
+							name="delete"
+							size={25}
+							color="red"
+							onPress={() => deleteTodo('0000')}
+						/>
+					)}
+				</View>
 			</View>
 			{/* //? This is the prompt box that displays once you click to add a todo */}
 			<Modal animationType="slide" transparent={true} visible={modalVisible}>
