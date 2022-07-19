@@ -372,7 +372,7 @@ const TodoScreen = ({ navigation, route }) => {
 	);
 
 	return (
-		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
+		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.tertiary }}>
 			{/* //? Section for the header, that has the bold title for our application */}
 			<View style={styles.header}>
 				<Text style={styles.headerText}>To-Do List</Text>
@@ -385,7 +385,7 @@ const TodoScreen = ({ navigation, route }) => {
 			{/* //? This is the prompt box that displays once you click to add a todo */}
 			<Modal animationType="slide" transparent={true} visible={modalVisible}>
 				<View style={styles.centeredView}>
-					<View style={[styles.modalView, { backgroundColor: '#dddddd' }]}>
+					<View style={[styles.modalView, { backgroundColor: COLORS.tertiary }]}>
 						<Text style={[styles.listItemText, { flex: null }]}>
 							Pick the limit for this task:
 						</Text>
@@ -394,7 +394,7 @@ const TodoScreen = ({ navigation, route }) => {
 							onDateChange={setDate}
 							minimumDate={new Date()}
 							textColor={COLORS.primary}
-							fadeToColor={COLORS.grey}
+							fadeToColor={COLORS.tertiary}
 						/>
 						<View style={styles.buttonsRow}>
 							<TouchableOpacity
@@ -412,7 +412,7 @@ const TodoScreen = ({ navigation, route }) => {
 									}
 								}}
 							>
-								<Text style={styles.listItemText}>
+								<Text style={[styles.listItemText, { color: COLORS.primary }]}>
 									{/* //? Display different text if the user is editing a todo or not */}
 									{todoToBeEdited == undefined ? 'Close' : 'Cancel update'}
 								</Text>
@@ -431,7 +431,9 @@ const TodoScreen = ({ navigation, route }) => {
 									setModalVisible(!modalVisible);
 								}}
 							>
-								<Text style={styles.textStyle}>Select Date</Text>
+								<Text style={[styles.listItemText, { color: COLORS.white }]}>
+									Select Date
+								</Text>
 							</TouchableOpacity>
 						</View>
 					</View>
@@ -586,7 +588,7 @@ const styles = StyleSheet.create({
 	//? Inside the footer, this will be the text container that will have the new TODO
 	inputContainer: {
 		backgroundColor: COLORS.white, //? The input text box also has a white background
-		elevation: 40, //? Gives the impression of depth to this input text box
+		elevation: 50, //? Gives the impression of depth to this input text box
 		flex: 1, //? Asks this container to stretch as much as possible while still respecting the others
 		height: 50, //? Determines how much height this will have
 		margin: 10, //? Outer spacing to separate our container from the other containers or device edges
@@ -597,7 +599,7 @@ const styles = StyleSheet.create({
 	//? Inside the footer, this will be the PLUS icon that will add the text from "inputContainer" to the TODO list
 	iconContainer: {
 		backgroundColor: COLORS.primary, //? The input text box also has a white background
-		elevation: 40, //? Gives the impression of depth/distance from the background
+		elevation: 50, //? Gives the impression of depth/distance from the background
 		height: 50, //? Determines how much height this will have
 		width: 50, //? Determines how much width this will have
 		marginVertical: 10, //? Margin on vertical axis
@@ -629,14 +631,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		marginTop: 22,
 	},
-	//? Modal text
-	//! Could use refactoring
-	modalText: {
-		marginBottom: 15,
-		textAlign: 'center',
-	},
 	//? Basic button definition for the modal box
-	//! Could use refactoring
 	button: {
 		borderRadius: 20,
 		padding: 10,
@@ -646,12 +641,5 @@ const styles = StyleSheet.create({
 		width: '100%', //? Expand row to take all horizontal space in the modal
 		flexDirection: 'row', //? Display items horizontally within the modal
 		alignSelf: 'flex-end', //? Display items at the right end of the modal
-	},
-	//? Modal button text
-	//! Could use refactoring
-	textStyle: {
-		color: COLORS.white,
-		fontWeight: 'bold',
-		textAlign: 'center',
 	},
 });

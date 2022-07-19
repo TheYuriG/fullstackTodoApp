@@ -1,6 +1,6 @@
 //? The default color theme for the app
 export const COLORS = {
-	primary: '#320080', //? Mostly text
+	primary: '#320080', //? FAB and Modal
 	secondary: '#800069', //? Accent color for detail
 	tertiary: '#eabfff', //? Backgrounds
 	taskDue: '#eeaaaa', //? Fill color for late todos
@@ -8,4 +8,5 @@ export const COLORS = {
 	checkBox: 'green', //? The color of the checkbox and its border
 	danger: 'red', //? The color used on the delete ICON
 	white: '#ffffff', //? Basic white
+	grey: 'grey',
 };
