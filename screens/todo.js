@@ -516,7 +516,7 @@ const TodoScreen = ({ navigation, route }) => {
 			<FlatList
 				showVerticalScrollIndicator={false}
 				style={{ backgroundColor: COLORS.tertiary }}
-				contentContainerStyle={{ padding: 5, paddingRight: 10, paddingBottom: 65 }}
+				contentContainerStyle={{ padding: 5, paddingRight: 10 }}
 				data={displayedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
 			/>
@@ -550,15 +550,12 @@ const TodoScreen = ({ navigation, route }) => {
 					backgroundColor={COLORS.tertiary}
 					flexDirection="row"
 					justifyContent="space-around"
-					paddingBottom={20}
+					paddingVertical={10}
 				>
 					{/* //? The "previous" button only renders if not on page 1 */}
 					{page != 1 && (
 						<TouchableOpacity
-							style={[
-								styles.button,
-								{ backgroundColor: COLORS.white, elevation: 10 },
-							]}
+							style={[styles.button, { backgroundColor: COLORS.white, elevation: 5 }]}
 							onPress={() => {
 								adminPagination(page - 1);
 								setPage((page) => page - 1);
@@ -574,10 +571,7 @@ const TodoScreen = ({ navigation, route }) => {
 					//? as many items as the limit per page inside the pagination function */}
 					{nextEnabled && (
 						<TouchableOpacity
-							style={[
-								styles.button,
-								{ backgroundColor: COLORS.white, elevation: 10 },
-							]}
+							style={[styles.button, { backgroundColor: COLORS.white, elevation: 5 }]}
 							onPress={() => {
 								adminPagination(page + 1);
 								setPage((page) => page + 1);
@@ -617,9 +611,7 @@ const styles = StyleSheet.create({
 	listItem: {
 		padding: 5, //? Inner spacing between items and the edges of the container
 		flexDirection: 'row', //? Display items on the horizontal axis
-		elevation: 10, //? Gives the impression of depth/distance from the background
-		marginVertical: 5, //? Outer vertical spacing to separate our container from the other containers or device edges
-		marginLeft: 5, //? Outer left spacing to separate our container from the other containers or device edges
+		elevation: 5, //? Gives the impression of depth/distance from the background
 		borderRadius: 20, //? Rounds the edges of the list Item box
 		borderColor: COLORS.secondary, //? Border color for the list items
 		borderWidth: 3, //? How thick the list item border is
@@ -703,6 +695,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginTop: 22,
+		backgroundColor: 'rgba(0, 0, 0, 0.3)',
 	},
 	//? Basic button definition for the modal box
 	button: {
