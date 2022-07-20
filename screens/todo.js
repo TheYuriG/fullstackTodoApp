@@ -245,8 +245,8 @@ const TodoScreen = ({ navigation, route }) => {
 			.doc(todoToBeEdited.id)
 			.update({
 				taskDescription: textInput,
-				editedAt: new Date(),
-				targetDate: date,
+				editedAt: new Date().getTime(),
+				targetDate: date.getTime(),
 			})
 			.then(() => {
 				//? And reset the input so the user doesn't have to
