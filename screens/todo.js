@@ -29,7 +29,7 @@ const TodoScreen = ({ navigation, route }) => {
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
 	//? Filter to display all TODOs or only the ones that are due
-	const [filterByDue, setFilterByDue] = useState(true);
+	const [filterByDue, setFilterByDue] = useState(false);
 	//? Pagination system
 	const [lastDocument, setLastDocument] = useState();
 	//? ID of the todo being edited, if any
@@ -386,6 +386,35 @@ const TodoScreen = ({ navigation, route }) => {
 			<View style={styles.header}>
 				<Text style={styles.headerText}>To-Do List</Text>
 				<View flexDirection="row">
+					{/* //? The UI will only render the DELETE ALL button on the header
+            		//? if there is even anything to be deleted in the first place */}
+					{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
+						<View marginRight={10}>
+							<ICON
+								name="delete"
+								size={25}
+								color={COLORS.danger}
+								onPress={() => deleteTodo('0000')}
+							/>
+						</View>
+					)}
+					{displayedTodos.length > 0 && user === 'admin@domain.com' && (
+						<View marginRight={10}>
+							<ICON
+								name="timer"
+								size={25}
+								color={filterByDue ? COLORS.danger : COLORS.white}
+								onPress={() => {
+									setAllTodos([]);
+									setTodos([]);
+									setFilterByDue(!filterByDue);
+									setPage(1);
+									adminPagination(1, !filterByDue);
+								}}
+							/>
+						</View>
+					)}
+					{/* //? Logout button */}
 					<ICON
 						name="logout"
 						size={25}
