@@ -17,6 +17,7 @@ import BouncyCheckbox from 'react-native-bouncy-checkbox'; //? Documentation: ht
 import ICON from 'react-native-vector-icons/MaterialIcons'; //? Documentation: https://github.com/oblador/react-native-vector-icons
 import firestore from '@react-native-firebase/firestore'; //? Documentation: https://rnfirebase.io/firestore/usage
 import auth from '@react-native-firebase/auth'; //? Documentation: https://rnfirebase.io/auth/usage
+
 const TodoScreen = ({ navigation, route }) => {
 	//? Tracks the text input at the footer
 	const [textInput, setTextInput] = useState('');
@@ -98,8 +99,8 @@ const TodoScreen = ({ navigation, route }) => {
 		}
 	}
 
-	//? Helper function that will read the database for a specific user and
-	//? then update the UI accordingly
+	//? Helper function that will read the database for a specific user, pull all of their TODOs
+	//? and then update the UI accordingly
 	function performOneDatabaseRead() {
 		//? Access the database and then use "databaseReadResult()" to
 		//? modify the result into useful data for the UI
@@ -113,7 +114,7 @@ const TodoScreen = ({ navigation, route }) => {
 			});
 	}
 
-	//? Handles pagination for admin mode
+	//? Handles pagination for admin mode, obeying "limitPerPage"
 	function adminPagination(page, due = filterByDue) {
 		//? Check if the passed in filterByDue matches the current state
 		//! This will be false when the user clicks to enable/disable the
@@ -177,14 +178,14 @@ const TodoScreen = ({ navigation, route }) => {
 		}
 	}
 
-	//? Loads app data from database upon mount
+	//? Loads app data from database upon first mount
 	useEffect(() => {
 		//? Checks who is accessing the app and provides the UI accordingly
 		if (user == 'admin@domain.com') {
 			//? If the admin is logged in, display todos in pagination mode
 			adminPagination(page);
 		} else {
-			//? If any other user is logged in, display all todos
+			//? If any other user is logged in, display all todos for that user
 			performOneDatabaseRead();
 		}
 	}, []);
@@ -543,7 +544,7 @@ const TodoScreen = ({ navigation, route }) => {
 					</TouchableOpacity>
 				</View>
 			)}
-			{/* //? Admin mode pagination and due TODOs */}
+			{/* //? Admin mode pagination */}
 			{user == 'admin@domain.com' && (
 				<View
 					backgroundColor={COLORS.tertiary}
