@@ -403,7 +403,7 @@ const TodoScreen = ({ navigation, route }) => {
 		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.tertiary }}>
 			{/* //? Section for the header, that has the bold title for our application */}
 			<View style={styles.header}>
-				<Text style={styles.headerText}>To-Do List</Text>
+				<Text style={styles.headerText}>To-Do List{filterByDue ? ' (only due)' : ''}</Text>
 				<View flexDirection="row">
 					{/* //? The UI will only render the DELETE ALL button on the header
             		//? if there is even anything to be deleted in the first place */}
