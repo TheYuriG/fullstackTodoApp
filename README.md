@@ -1,7 +1,7 @@
 # Full Stack Todo App Example
-This is an example of TODO app that is fully integrated with a database and has a authentication system managed by Firebase Authentication.
+This is an example of TODO app that is fully integrated with Firebase Firestore and has a authentication system managed by Firebase Authentication.
 
-### Usage
+### Building
 Clone this project and install all dependencies. Make sure you have the latest version of expo-cli installed globally on your machine and then build the project with `expo run:android`. After the build finishes, copy the files to the respective folders they belong:
 - `android/app/google-services.json`
 - `android/app/build.gradle`
@@ -9,16 +9,19 @@ Clone this project and install all dependencies. Make sure you have the latest v
 
 Alternatively, your git will mention that these files were changed between the clone and the build, just restore them using the git control panel and you are good to go.
 
+## Usage
+- Register your account (consider using a dummy email like `x@y.com`, although your address isn't visible on the app at all).
+- You should get logged in automatically. Create your TODOs as you wish, but refrain from putting any personal information, as this is not a production application and your data can be seen in admin mode (although there is no way to connect the TODO to you, since no email is displayed)
+- After you finished creating data as user, login as admin to view all the TODOs. You can't add new, delete or edit any of them, only view. Login with `admin@domain.com` / `adminpassword`.
+
 ##### Features
-- Easy to create and delete TODOs.
-- [PENDING] Authentication and automatic synchronization of your TODOs with the cloud.
+- Easy to create, edit and delete TODOs.
+- Authentication and automatic synchronization of your TODOs with the cloud.
 - Ability to set a time and date to your TODOs so you can assign them as tangible goals.
 
 ## Problems (Known issues):
-- There is no real authentication worflow due to being unable to connect to a database.
-- - Couldn't get firebase to work, got consistent "auth/failed to connect" errors.
-- - Couldn't get Mongo Realm to work, required downgrading to EXPO v44 since they don't have support to v45 as of now. [[1]](https://www.mongodb.com/docs/realm/sdk/react-native/install/#prerequisites) [[2]](https://github.com/realm/realm-js/issues/4639)
-- Slow reads/writes because of Async Storage.
+- There is no easy way to ignore complete TODOs when viewing the due TODOs in admin mode because of how Firestore works with sequential queries. Manually removing them could potentially cause pagination issues.
+- There is no validation for text. Firebase Authentication will require a 'valid' email and a 6 characters long password, but that's about it. You can enter a 1-character-long string TODOs if you want and the app should behave just fine (empty strings will return an error though).
 
 ##### Future Updates
 - [ ] Configurable notifications for approaching TODOs
