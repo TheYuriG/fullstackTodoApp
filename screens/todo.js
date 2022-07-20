@@ -428,16 +428,6 @@ const TodoScreen = ({ navigation, route }) => {
 								});
 						}}
 					/>
-					{/* //? The UI will only render the DELETE ALL button on the header
-            		//? if there is even anything to be deleted in the first place */}
-					{displayedTodos.length > 0 && user !== 'admin@domain.com' && (
-						<ICON
-							name="delete"
-							size={25}
-							color="red"
-							onPress={() => deleteTodo('0000')}
-						/>
-					)}
 				</View>
 			</View>
 			{/* //? This is the prompt box that displays once you click to add a todo */}
