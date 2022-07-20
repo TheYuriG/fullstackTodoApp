@@ -313,91 +313,110 @@ const TodoScreen = ({ navigation, route }) => {
 	};
 
 	//? This is the component that will be rendered for every index within the displayedTodos
-	const ListItem = ({ todo: { item: oneOfTheTodos } }) => (
-		<View
-			style={[
-				styles.listItem,
-				{
-					//? Background color will be defined by these principles:
-					//? (1) check if the task was finished and paint it green if so
-					//? (2) check if there is still time to complete the task, paint
-					//? the background white if so.
-					//? (3) If both of the previous checks failed, it means that the
-					//? task isn't completed yet and it ran out of time, so paint it red
-					backgroundColor: oneOfTheTodos?.completionStatus
-						? COLORS.taskComplete
-						: oneOfTheTodos?.targetDate < new Date().getTime()
-						? COLORS.taskDue
-						: COLORS.white,
-				},
-			]}
-		>
-			{/* //? Creates the checkbox and the respective TODO text around it */}
-			<View flex={1} flexDirection="row" padding={5}>
-				{user !== 'admin@domain.com' && (
-					<BouncyCheckbox
-						onPress={(isChecked) => changeTodoStatus(isChecked, oneOfTheTodos?.id)}
-						unfillColor={
-							oneOfTheTodos?.completionStatus
-								? COLORS.taskComplete
-								: oneOfTheTodos?.targetDate < new Date().getTime()
-								? COLORS.taskDue
-								: COLORS.white
-						} //? Inner color of the checkbox
-						fillColor={COLORS.checkBox} //? Outer color (radius) of the checkbox
-						isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
-						size={35} //? Size of the checkbox
-						iconStyle={{
-							borderWidth: 3, //? Make the TODO checkbox thicker than default
-						}}
-					></BouncyCheckbox>
-				)}
-				{/* //? Task description text box */}
-				<Text
+	const ListItem = ({ todo: { item: oneOfTheTodos } }) => {
+		//? Current date and time to check if a todo is late
+		const now = new Date();
+		//? Date when a todo is meant to be finished
+		const todoDue = new Date(oneOfTheTodos.targetDate);
+		//? Color that is used on several backgrounds
+		const todoColor = oneOfTheTodos?.completionStatus
+			? COLORS.taskComplete
+			: oneOfTheTodos?.targetDate < now.getTime()
+			? COLORS.taskDue
+			: COLORS.white;
+		return (
+			<View borderRadius={20} backgroundColor={todoColor} marginVertical={5} marginLeft={5}>
+				{/* //? The todo status, description and edit/delete icons */}
+				<View
 					style={[
-						styles.listItemText,
+						styles.listItem,
 						{
-							textDecorationLine: oneOfTheTodos?.completionStatus
-								? 'line-through'
-								: 'none',
-							flex: 1,
+							//? Background color will be defined by these principles:
+							//? (1) check if the task was finished and paint it green if so
+							//? (2) check if there is still time to complete the task, paint
+							//? the background white if so.
+							//? (3) If both of the previous checks failed, it means that the
+							//? task isn't completed yet and it ran out of time, so paint it red
+							backgroundColor: todoColor,
 						},
 					]}
 				>
-					{oneOfTheTodos?.taskDescription}
-				</Text>
-			</View>
-			{/* //? View containing the edit and delete buttons */}
-			{user !== 'admin@domain.com' && (
-				<View style={styles.iconsArea}>
-					{/* //? Edit button */}
-					{!oneOfTheTodos?.completionStatus && (
-						<View marginRight={5}>
-							<TouchableOpacity
-								style={[styles.actionBox, { backgroundColor: COLORS.grey }]}
-							>
+					{/* //? Creates the checkbox and the respective TODO text around it */}
+					<View flex={1} flexDirection="row" padding={5}>
+						{user !== 'admin@domain.com' && (
+							<BouncyCheckbox
+								onPress={(isChecked) =>
+									changeTodoStatus(isChecked, oneOfTheTodos?.id)
+								}
+								unfillColor={todoColor} //? Inner color of the checkbox
+								fillColor={COLORS.checkBox} //? Outer color (radius) of the checkbox
+								isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
+								size={35} //? Size of the checkbox
+								iconStyle={{
+									borderWidth: 3, //? Make the TODO checkbox thicker than default
+								}}
+							></BouncyCheckbox>
+						)}
+						{/* //? Task description text box */}
+						<Text
+							style={[
+								styles.listItemText,
+								{
+									textDecorationLine: oneOfTheTodos?.completionStatus
+										? 'line-through'
+										: 'none',
+									flex: 1,
+								},
+							]}
+						>
+							{oneOfTheTodos?.taskDescription}
+						</Text>
+					</View>
+					{/* //? View containing the edit and delete buttons */}
+					{user !== 'admin@domain.com' && (
+						<View style={styles.iconsArea}>
+							{/* //? Edit button */}
+							{!oneOfTheTodos?.completionStatus && (
+								<View marginRight={5}>
+									<TouchableOpacity
+										style={[styles.actionBox, { backgroundColor: COLORS.grey }]}
+									>
+										<ICON
+											name="edit"
+											size={20}
+											color={COLORS.white}
+											onPress={() => clickEditTodo(oneOfTheTodos)}
+										></ICON>
+									</TouchableOpacity>
+								</View>
+							)}
+							{/* //? Delete button */}
+							<TouchableOpacity style={[styles.actionBox]}>
 								<ICON
-									name="edit"
+									name="delete"
 									size={20}
 									color={COLORS.white}
-									onPress={() => clickEditTodo(oneOfTheTodos)}
+									onPress={() => deleteTodo(oneOfTheTodos?.id)}
 								></ICON>
 							</TouchableOpacity>
 						</View>
 					)}
-					{/* //? Delete button */}
-					<TouchableOpacity style={[styles.actionBox]}>
-						<ICON
-							name="delete"
-							size={20}
-							color={COLORS.white}
-							onPress={() => deleteTodo(oneOfTheTodos?.id)}
-						></ICON>
-					</TouchableOpacity>
 				</View>
-			)}
-		</View>
-	);
+				{/* //? The todo timer. Only displays if not complete */}
+				{todoColor != COLORS.taskComplete && (
+					<View paddingHorizontal={14} paddingVertical={7}>
+						<Text style={{ color: COLORS.secondary, fontSize: 14 }}>
+							Due:
+							{' ' +
+								todoDue.toLocaleTimeString() +
+								' - ' +
+								todoDue.toLocaleDateString()}
+						</Text>
+					</View>
+				)}
+			</View>
+		);
+	};
 
 	//? The UI being rendered and displayed
 	return (
