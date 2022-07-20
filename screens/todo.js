@@ -28,6 +28,8 @@ const TodoScreen = ({ navigation, route }) => {
 	const [date, setDate] = useState(new Date());
 	//? Manages the opening and closing of the date picker
 	const [modalVisible, setModalVisible] = useState(false);
+	//? Filter to display all TODOs or only the ones that are due
+	const [filterByDue, setFilterByDue] = useState(true);
 	//? Pagination system
 	const [lastDocument, setLastDocument] = useState();
 	//? ID of the todo being edited, if any
@@ -93,6 +95,7 @@ const TodoScreen = ({ navigation, route }) => {
 		firestore()
 			.collection('Todos') //? Queries the 'Todos' collection
 			.where('taskOwner', '==', user) //? Retrieves documents where the taskOwner is the same person who is logged in
+			// .orderBy('createdAt', 'asc')
 			.get()
 			.then((result) => {
 				databaseReadResult(result);
@@ -109,6 +112,11 @@ const TodoScreen = ({ navigation, route }) => {
 			//? Making first request when loading in admin mode
 			firestore()
 				.collection('Todos') //? Queries the 'Todos' collection
+				.where(
+					'targetDate',
+					filterByDue ? '<' : '>',
+					filterByDue ? new Date().getTime() : 1658260002947
+				)
 				.limit(limitPerPage) //? Limit items per request
 				.get()
 				.then((result) => {
@@ -468,7 +476,31 @@ const TodoScreen = ({ navigation, route }) => {
 				data={displayedTodos}
 				renderItem={(oneTodo) => <ListItem todo={oneTodo} />}
 			/>
-			{/* //? Admin mode pagination */}
+			{/* //? Section for the footer where users can add new items to
+			//? the list. This will not display in admin mode */}
+			{user != 'admin@domain.com' && (
+				<View style={styles.footer}>
+					{/* //? Footer's input data section */}
+					<View style={styles.inputContainer}>
+						<TextInput
+							placeholder="Add new todo..."
+							value={textInput}
+							onChangeText={(text) => setTextInput(text)}
+						></TextInput>
+					</View>
+					{/* //? Footer's "Add" button if new, "Edit" button if old */}
+					<TouchableOpacity onPress={() => setModalVisible(true)}>
+						<View style={styles.iconContainer}>
+							<ICON
+								name={todoToBeEdited != undefined ? 'edit' : 'add'}
+								color={COLORS.white}
+								size={30}
+							/>
+						</View>
+					</TouchableOpacity>
+				</View>
+			)}
+			{/* //? Admin mode pagination and due TODOs */}
 			{user == 'admin@domain.com' && (
 				<View
 					backgroundColor={COLORS.tertiary}
@@ -513,30 +545,6 @@ const TodoScreen = ({ navigation, route }) => {
 							</View>
 						</TouchableOpacity>
 					)}
-				</View>
-			)}
-			{/* //? Section for the footer where users can add new items to
-			//? the list. This will not display in admin mode */}
-			{user != 'admin@domain.com' && (
-				<View style={styles.footer}>
-					{/* //? Footer's input data section */}
-					<View style={styles.inputContainer}>
-						<TextInput
-							placeholder="Add new todo..."
-							value={textInput}
-							onChangeText={(text) => setTextInput(text)}
-						></TextInput>
-					</View>
-					{/* //? Footer's "Add" button if new, "Edit" button if old */}
-					<TouchableOpacity onPress={() => setModalVisible(true)}>
-						<View style={styles.iconContainer}>
-							<ICON
-								name={todoToBeEdited != undefined ? 'edit' : 'add'}
-								color={COLORS.white}
-								size={30}
-							/>
-						</View>
-					</TouchableOpacity>
 				</View>
 			)}
 		</SafeAreaView>
