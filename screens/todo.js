@@ -47,10 +47,10 @@ const TodoScreen = ({ navigation, route }) => {
 	const limitPerPage = 10;
 
 	//? Processes the snapshot result of the database query for todos
-	function databaseReadResult(databaseData) {
+	function databaseReadResult(databaseData, due = false) {
 		//? Go through every document fetched from the database and
 		//? transform it in useful data for the app
-		const databaseFetchedTodos = databaseData['_docs'].map((document) => {
+		let databaseFetchedTodos = databaseData['_docs'].map((document) => {
 			const individualDatabaseTodo = {
 				id: document._ref._documentPath._parts[1],
 				taskDescription: document._data.taskDescription,
@@ -67,23 +67,34 @@ const TodoScreen = ({ navigation, route }) => {
 			(a, b) => a.creationTime > b.creationTime
 		);
 
-		//? Update the UI with the useful data
+		//? Update the UI with the useful data sorted by creation date
 		setTodos(sortedByCreationTodos);
 
+		//? Run special functions if in admin mode
 		if (user == 'admin@domain.com') {
 			//? We store the last document for the admin pagination system
 			const numOfDocsFetched = databaseData['_docs'].length;
 			if (numOfDocsFetched > 0) {
 				setLastDocument(databaseData['_docs'][numOfDocsFetched - 1]);
-				setAllTodos([...allTodos, ...sortedByCreationTodos]);
 			}
 
-			//? If the database request fetched less than the limit of items
-			//? per page, then we should disable the "NEXT" button as we have
-			//? reached the limit of documents
-			if (databaseFetchedTodos.length < limitPerPage) {
-				setEnableNextButton(false);
+			//? Check if there is a mismatch with the filterByDue value,
+			//? which would mean the admin just clicked to toggle due TODOs
+			if (due != filterByDue) {
+				//? If the user just clicked the due TODOs toggle, overwrite
+				//? the cached TODOs with the ones just fetched
+				setAllTodos(sortedByCreationTodos);
+			} else {
+				//? If there is no mismatch, add to the cached TODOs
+				setAllTodos([...allTodos, ...sortedByCreationTodos]);
 			}
+		}
+
+		//? If the database request fetched less than the limit of items
+		//? per page, then we should disable the "NEXT" button as we have
+		//? reached the limit of documents available
+		if (databaseFetchedTodos.length < limitPerPage) {
+			setEnableNextButton(false);
 		}
 	}
 
@@ -103,38 +114,45 @@ const TodoScreen = ({ navigation, route }) => {
 	}
 
 	//? Handles pagination for admin mode
-	function adminPagination(page) {
+	function adminPagination(page, due = filterByDue) {
+		//? Check if the passed in filterByDue matches the current state
+		//! This will be false when the user clicks to enable/disable the
+		//! filterByDue button on the header, due to how setState works
+		const dueMismatch = due != filterByDue;
+
 		//? Check if the cached todos array is bigger than the sequence
 		//? of requested items. If yes, the user is requesting to view
 		//? items that are not cached in memory and therefore we will now
 		//? fetch said items
-		if (allTodos.length == 0) {
-			//? Making first request when loading in admin mode
+		//! If we have a filterByDue mismatch, fetch all items again
+		if (allTodos.length == 0 || dueMismatch) {
+			//? Making first request when loading in admin mode or when the admin
+			//? toggles between all TODOs and due TODOs
 			firestore()
 				.collection('Todos') //? Queries the 'Todos' collection
-				.where(
-					'targetDate',
-					filterByDue ? '<' : '>',
-					filterByDue ? new Date().getTime() : 1658260002947
-				)
+				//? Check due time if the admin requested this filter
+				.where('targetDate', due ? '<' : '>', due ? new Date().getTime() : 0)
+				//? Sorting is unnecessary here, but Firestore cries about it if we don't do it
+				.orderBy('targetDate', 'asc')
 				.limit(limitPerPage) //? Limit items per request
 				.get()
 				.then((result) => {
-					databaseReadResult(result);
+					databaseReadResult(result, due);
 				});
 		} else if (allTodos.length <= (page - 1) * limitPerPage) {
-			//? Add the displayed todos to the admin cache
-			setAllTodos([...allTodos, ...displayedTodos]);
-
 			//? Requesting additional database documents if the next page
 			//? of todos wasn't cached in memory yet
 			firestore()
 				.collection('Todos') //? Queries the 'Todos' collection
+				//? Check due time if the admin requested this filter
+				.where('targetDate', due ? '<' : '>', due ? new Date().getTime() : 0)
+				//? Sorting is unnecessary here, but Firestore cries about it if we don't do it
+				.orderBy('targetDate', 'asc')
 				.limit(limitPerPage) //? Limit items per request
 				.startAfter(lastDocument)
 				.get()
 				.then((result) => {
-					databaseReadResult(result);
+					databaseReadResult(result, due);
 				});
 		} else {
 			//? If the user is requesting to see items we have already cached,
@@ -380,6 +398,7 @@ const TodoScreen = ({ navigation, route }) => {
 		</View>
 	);
 
+	//? The UI being rendered and displayed
 	return (
 		<SafeAreaView style={{ flex: 1, backgroundColor: COLORS.tertiary }}>
 			{/* //? Section for the header, that has the bold title for our application */}
@@ -398,6 +417,7 @@ const TodoScreen = ({ navigation, route }) => {
 							/>
 						</View>
 					)}
+					{/* //? Button to display only TODOs that are due */}
 					{displayedTodos.length > 0 && user === 'admin@domain.com' && (
 						<View marginRight={10}>
 							<ICON
@@ -405,10 +425,14 @@ const TodoScreen = ({ navigation, route }) => {
 								size={25}
 								color={filterByDue ? COLORS.danger : COLORS.white}
 								onPress={() => {
-									setAllTodos([]);
-									setTodos([]);
+									//? Toggle whether to display only due TODOs or all
 									setFilterByDue(!filterByDue);
+									//? Reset to page 1
 									setPage(1);
+									//? Enable next button if the admin was on the last page
+									//? (will be disabled again by "adminPagination()" if needed)
+									setEnableNextButton(true);
+									//? Refresh todos on the screen considering the data above
 									adminPagination(1, !filterByDue);
 								}}
 							/>
