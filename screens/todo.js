@@ -352,8 +352,10 @@ const TodoScreen = ({ navigation, route }) => {
 								fillColor={COLORS.checkBox} //? Outer color (radius) of the checkbox
 								isChecked={oneOfTheTodos?.completionStatus} //? Checks initial state, doesn't update state yet
 								size={35} //? Size of the checkbox
-								iconStyle={{
+								innerIconStyle={{
 									borderWidth: 3, //? Make the TODO checkbox thicker than default
+									alignContent: 'center',
+									justifyContent: 'center',
 								}}
 							></BouncyCheckbox>
 						)}
